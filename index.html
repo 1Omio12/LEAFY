@@ -588,6 +588,32 @@
         </div>
     </div>
 
+    <!-- NEW: Download Confirmation Modal -->
+    <div id="confirm-modal-overlay" class="modal-overlay fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div id="confirm-modal" class="modal-card bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-sm w-full relative">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between p-4 border-b dark:border-gray-700">
+                <h3 id="confirm-modal-title" class="text-lg font-semibold text-gray-900 dark:text-white">Confirm Download</h3>
+                <button id="confirm-modal-close-btn" class="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <!-- Modal Content -->
+            <div class="p-6">
+                <p class="text-sm text-gray-700 dark:text-gray-300">Do you want to download the complete channel data as a CSV file?</p>
+            </div>
+            <!-- Modal Footer -->
+            <div class="flex justify-end space-x-3 p-4 bg-gray-50 dark:bg-gray-800/50 border-t dark:border-gray-700 rounded-b-xl">
+                <button id="confirm-modal-cancel-btn" class="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600">
+                    Cancel
+                </button>
+                <button id="confirm-modal-download-btn" class="px-4 py-2 rounded-lg text-sm font-medium bg-emerald-600 text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
+                    Yes, Download
+                </button>
+            </div>
+        </div>
+    </div>
+
 
     <!-- 6. Main JavaScript Logic -->
     <script>
@@ -611,6 +637,8 @@
             let tdsChartInstance;
             let currentFeeds = []; // Added for resize handler
             let currentAnalytics = {}; // NEW: To store full analytics data
+            // Store the element that opened the modal
+            let lastFocusedElement = null;
 
             // NEW: Make pump names globally accessible for modal
             const pumpNames = {
@@ -638,11 +666,16 @@
                 sidebarOverlay: document.getElementById('sidebar-overlay'), // NEW
                 downloadCsvButton: document.getElementById('download-csv-button'), // NEW
                 pumpAnalyticsGrid: document.getElementById('pump-analytics-grid'), // NEW
-                // NEW: Modal UI elements
+                // NEW: Analytics Modal UI
                 modalOverlay: document.getElementById('analytics-modal-overlay'),
                 modalTitle: document.getElementById('modal-title'),
                 modalContent: document.getElementById('modal-content'),
-                modalCloseBtn: document.getElementById('modal-close-btn')
+                modalCloseBtn: document.getElementById('modal-close-btn'),
+                // NEW: Confirmation Modal UI
+                confirmModalOverlay: document.getElementById('confirm-modal-overlay'),
+                confirmModalCloseBtn: document.getElementById('confirm-modal-close-btn'),
+                confirmModalCancelBtn: document.getElementById('confirm-modal-cancel-btn'),
+                confirmModalDownloadBtn: document.getElementById('confirm-modal-download-btn'),
             };
 
             // --- 4. THINGSPEAK API FUNCTIONS ---
@@ -970,6 +1003,9 @@
                 const data = currentAnalytics[pumpId];
                 if (!data) return;
 
+                // Store the currently focused element
+                lastFocusedElement = document.activeElement;
+
                 ui.modalTitle.textContent = `Dose Log: ${pumpNames[pumpId]}`;
 
                 if (data.dosesList.length === 0) {
@@ -983,15 +1019,135 @@
                     ui.modalContent.innerHTML = `<ul class="space-y-1 text-sm text-gray-700 dark:text-gray-300">${listHtml}</ul>`;
                 }
 
+                // Add ARIA attributes
+                ui.modalOverlay.setAttribute('role', 'dialog');
+                ui.modalOverlay.setAttribute('aria-modal', 'true');
+                ui.modalOverlay.setAttribute('aria-labelledby', 'modal-title');
+
                 ui.modalOverlay.classList.remove('hidden');
                 // Trigger transition
-                setTimeout(() => ui.modalOverlay.classList.add('open'), 10);
+                setTimeout(() => {
+                    ui.modalOverlay.classList.add('open');
+                    // Focus the close button for keyboard accessibility
+                    ui.modalCloseBtn.focus();
+                    // Trap focus in modal
+                    trapFocus(ui.modalOverlay, closeAnalyticsModal); // Pass close function
+                }, 10);
             }
 
             function closeAnalyticsModal() {
                 ui.modalOverlay.classList.remove('open');
+                
+                // Remove focus trap event listeners
+                if (ui.modalOverlay._trapFocusHandlers) {
+                    ui.modalOverlay.removeEventListener('keydown', ui.modalOverlay._trapFocusHandlers.handleTabKey);
+                    ui.modalOverlay.removeEventListener('keydown', ui.modalOverlay._trapFocusHandlers.handleEscapeKey);
+                    delete ui.modalOverlay._trapFocusHandlers;
+                }
+                
                 // Wait for transition to finish before hiding
-                setTimeout(() => ui.modalOverlay.classList.add('hidden'), 300);
+                setTimeout(() => {
+                    ui.modalOverlay.classList.add('hidden');
+                    // Remove ARIA attributes
+                    ui.modalOverlay.removeAttribute('role');
+                    ui.modalOverlay.removeAttribute('aria-modal');
+                    ui.modalOverlay.removeAttribute('aria-labelledby');
+                    // Return focus to the element that opened the modal
+                    if (lastFocusedElement) {
+                        lastFocusedElement.focus();
+                        lastFocusedElement = null;
+                    }
+                }, 300);
+            }
+
+            // --- NEW: Download Confirmation Modal Functions ---
+            function openConfirmModal() {
+                // Store the currently focused element
+                lastFocusedElement = document.activeElement;
+                
+                // Add ARIA attributes
+                ui.confirmModalOverlay.setAttribute('role', 'dialog');
+                ui.confirmModalOverlay.setAttribute('aria-modal', 'true');
+                ui.confirmModalOverlay.setAttribute('aria-labelledby', 'confirm-modal-title');
+
+                ui.confirmModalOverlay.classList.remove('hidden');
+                setTimeout(() => {
+                    ui.confirmModalOverlay.classList.add('open');
+                    // Focus the cancel button
+                    ui.confirmModalCancelBtn.focus();
+                    // Trap focus
+                    trapFocus(ui.confirmModalOverlay, closeConfirmModal); // Pass close function
+                }, 10);
+            }
+
+            function closeConfirmModal() {
+                ui.confirmModalOverlay.classList.remove('open');
+                
+                // Remove focus trap event listeners
+                if (ui.confirmModalOverlay._trapFocusHandlers) {
+                    ui.confirmModalOverlay.removeEventListener('keydown', ui.confirmModalOverlay._trapFocusHandlers.handleTabKey);
+                    ui.confirmModalOverlay.removeEventListener('keydown', ui.confirmModalOverlay._trapFocusHandlers.handleEscapeKey);
+                    delete ui.confirmModalOverlay._trapFocusHandlers;
+                }
+                
+                setTimeout(() => {
+                    ui.confirmModalOverlay.classList.add('hidden');
+                    // Remove ARIA attributes
+                    ui.confirmModalOverlay.removeAttribute('role');
+                    ui.confirmModalOverlay.removeAttribute('aria-modal');
+                    ui.confirmModalOverlay.removeAttribute('aria-labelledby');
+                    // Return focus
+                    if (lastFocusedElement) {
+                        lastFocusedElement.focus();
+                        lastFocusedElement = null;
+                    }
+                }, 300);
+            }
+
+            function handleConfirmDownload() {
+                const { channelId, readApiKey } = iotConfig;
+                const csvUrl = `https://api.thingspeak.com/channels/${channelId}/feeds.csv?api_key=${readApiKey}`;
+                window.open(csvUrl, '_blank');
+                closeConfirmModal();
+            }
+
+            // Focus trap for modal (now generic)
+            function trapFocus(element, closeFunction) {
+                const focusableElements = element.querySelectorAll(
+                    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                );
+                const firstFocusable = focusableElements[0];
+                const lastFocusable = focusableElements[focusableElements.length - 1];
+
+                function handleTabKey(e) {
+                    if (e.key !== 'Tab') return;
+
+                    if (e.shiftKey) {
+                        // Shift + Tab
+                        if (document.activeElement === firstFocusable) {
+                            e.preventDefault();
+                            lastFocusable.focus();
+                        }
+                    } else {
+                        // Tab
+                        if (document.activeElement === lastFocusable) {
+                            e.preventDefault();
+                            firstFocusable.focus();
+                        }
+                    }
+                }
+
+                function handleEscapeKey(e) {
+                    if (e.key === 'Escape') {
+                        closeFunction(); // Use the passed close function
+                    }
+                }
+
+                element.addEventListener('keydown', handleTabKey);
+                element.addEventListener('keydown', handleEscapeKey);
+
+                // Store listeners so we can remove them later
+                element._trapFocusHandlers = { handleTabKey, handleEscapeKey };
             }
 
             async function loadData(showSpinners = true) {
@@ -1007,7 +1163,16 @@
                     const newFeeds = (response.feeds || []).slice(-MAX_POINTS);
                     updateDashboardUI(newFeeds);
                 } catch (err) {
-                    setErrorMessage(err.message); // This will now show in the analytics card
+                    // Enhanced error handling
+                    if (!navigator.onLine) {
+                        setErrorMessage("No internet connection. Please check your network.");
+                    } else if (err.message.includes('429')) {
+                        setErrorMessage("Rate limit exceeded. Please wait a moment.");
+                    } else if (err.message.includes('401') || err.message.includes('403')) {
+                        setErrorMessage("Authentication error. Check API key.");
+                    } else {
+                        setErrorMessage(err.message);
+                    }
                     ui.loadingPh.style.display = 'none';
                     ui.loadingTds.style.display = 'none';
                 } finally {
@@ -1069,16 +1234,10 @@
                 }, 1000);
             });
             
-            // --- FIX: Corrected Event Listener Section ---
+            // --- UPDATED Event Listener Section ---
 
-            // NEW: Download CSV Button Listener
-            ui.downloadCsvButton.addEventListener('click', () => {
-                const { channelId, readApiKey } = iotConfig;
-                // Construct the download URL
-                const csvUrl = `https://api.thingspeak.com/channels/${channelId}/feeds.csv?api_key=${readApiKey}`;
-                // Actually open the URL
-                window.open(csvUrl, '_blank');
-            }); // <-- FIXED: Added missing closing bracket
+            // NEW: Download CSV Button Listener now opens confirm modal
+            ui.downloadCsvButton.addEventListener('click', openConfirmModal);
 
             // NEW: Listen for analytics modal clicks
             ui.pumpAnalyticsGrid.addEventListener('click', (e) => {
@@ -1088,15 +1247,24 @@
                 }
             });
 
-            // NEW: Modal close button listeners (moved from nested location)
+            // NEW: Analytics Modal close button listeners
             ui.modalCloseBtn.addEventListener('click', closeAnalyticsModal);
-            
-            // Close modal if overlay is clicked (moved from nested location)
             ui.modalOverlay.addEventListener('click', (e) => {
                 if (e.target === ui.modalOverlay) {
                     closeAnalyticsModal();
                 }
             });
+
+            // NEW: Confirmation Modal button listeners
+            ui.confirmModalCloseBtn.addEventListener('click', closeConfirmModal);
+            ui.confirmModalCancelBtn.addEventListener('click', closeConfirmModal);
+            ui.confirmModalOverlay.addEventListener('click', (e) => {
+                if (e.target === ui.confirmModalOverlay) {
+                    closeConfirmModal();
+                }
+            });
+            ui.confirmModalDownloadBtn.addEventListener('click', handleConfirmDownload);
+
 
             // --- 9. SPLASH SCREEN LOGIC ---
             const splashScreen = document.getElementById('splash-screen');
@@ -1126,13 +1294,13 @@
                     // Redraw charts with new responsive settings
                     if (phChartInstance && currentFeeds.length > 0) {
                         const phData = buildPhChartData(currentFeeds);
-                        phChartInstance.update(phData.data, phData.options);
+                        phChartInstance.update(phData.data, phChartInstance.options);
                     }
                     if (tdsChartInstance && currentFeeds.length > 0) {
                         const tdsData = buildTdsChartData(currentFeeds);
-                        tdsChartInstance.update(tdsData.data, tdsData.options);
+                        tdsChartInstance.update(tdsData.data, tdsChartInstance.options);
                     }
-                }, 250);
+                }, 500); // Increased from 250ms to 500ms for better performance
             });
         });
     </script>
