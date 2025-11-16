@@ -391,6 +391,9 @@
     </div>
 
     <div id="app-content" class="flex h-screen">
+        <!-- NEW: Mobile Sidebar Overlay -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-20 md:hidden hidden"></div>
+        
         <!-- 6. Premium Sidebar Gradient (No theme change needed, it's dark by default) -->
         <aside id="sidebar" class="w-64 bg-gradient-to-b from-emerald-900 via-emerald-800 to-emerald-900 text-white flex-col fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 z-30 shadow-2xl">
             <!-- Logo -->
@@ -580,6 +583,7 @@
                 menuToggle: document.getElementById('menu-toggle'),
                 // NEW: Theme toggle
                 themeToggle: document.getElementById('theme-toggle'),
+                sidebarOverlay: document.getElementById('sidebar-overlay') // NEW
             };
 
             // --- 4. THINGSPEAK API FUNCTIONS ---
@@ -948,6 +952,25 @@
             // Sidebar toggle for mobile
             ui.menuToggle.addEventListener('click', () => {
                 ui.sidebar.classList.toggle('-translate-x-full');
+                ui.sidebarOverlay.classList.toggle('hidden'); // NEW
+            });
+            
+            // NEW: Add listener to overlay to close sidebar
+            ui.sidebarOverlay.addEventListener('click', () => {
+                ui.sidebar.classList.add('-translate-x-full');
+                ui.sidebarOverlay.classList.add('hidden');
+            });
+
+            // NEW: Add listener to sidebar links to close menu on click
+            ui.sidebar.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    // Only close if in mobile view (i.e., overlay is not hidden)
+                    if (!ui.sidebarOverlay.classList.contains('hidden')) {
+                        ui.sidebar.classList.add('-translate-x-full');
+                        ui.sidebarOverlay.classList.add('hidden');
+                    }
+                    // (In a real app, navigation would happen here)
+                });
             });
             
             // NEW: Theme toggle logic
