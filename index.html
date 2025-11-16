@@ -58,6 +58,15 @@
         /* Custom styles for Chartist charts */
         .ct-label {
             color: #6b7280; /* gray-500 */
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        /* Make labels bigger on larger screens */
+        @media (min-width: 768px) {
+            .ct-label {
+                font-size: 13px;
+            }
         }
         .ct-grid {
             stroke: #e5e7eb; /* gray-200 */
@@ -73,10 +82,18 @@
 
         /* Axis title styling */
         .ct-axis-title {
-            font-size: 12px;
+            font-size: 10px;
             fill: #6b7280;
             font-weight: 600;
         }
+
+        /* Bigger on desktop */
+        @media (min-width: 768px) {
+            .ct-axis-title {
+                font-size: 12px;
+            }
+        }
+        
         .dark .ct-axis-title {
             fill: #9ca3af;
         }
@@ -546,6 +563,7 @@
             let pumpUpdating = null;
             let phChartInstance;
             let tdsChartInstance;
+            let currentFeeds = []; // Added for resize handler
 
             // --- 3. UI ELEMENT REFERENCES ---
             const ui = {
@@ -633,14 +651,31 @@
             // CHANGE 6: Add Responsive Chart Label Handling
             function getResponsiveChartLabels(feeds) {
                 const isMobile = window.innerWidth < 768;
+                const feedCount = feeds.length;
+                
                 return feeds.map((feed, index) => {
                     const createdAt = feed.created_at ? new Date(feed.created_at) : null;
                     if (!createdAt) return "";
                     
-                    // On mobile, show every 3rd label to avoid crowding
-                    if (isMobile && (feeds.length - 1 - index) % 3 !== 0) return "";
+                    // Determine skip interval based on screen size and data points
+                    let skipInterval;
+                    if (isMobile) {
+                        // On mobile, show fewer labels
+                        if (feedCount > 30) skipInterval = 6;
+                        else if (feedCount > 20) skipInterval = 4;
+                        else skipInterval = 3;
+                    } else {
+                        // On desktop, show more labels
+                        if (feedCount > 30) skipInterval = 3;
+                        else skipInterval = 2;
+                    }
                     
-                    return createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    // Show first, last, and every nth label
+                    if (index === 0 || index === feedCount - 1 || index % skipInterval === 0) {
+                        return createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    }
+                    
+                    return "";
                 });
             }
 
@@ -662,10 +697,10 @@
                     showLabel: true
                 },
                 chartPadding: { 
-                    top: 20,     // Added
-                    right: 30, 
-                    bottom: 30,  // Increased from implicit 0
-                    left: 20     // Increased from 10
+                    top: 20,
+                    right: window.innerWidth < 768 ? 15 : 30,    // Less padding on mobile
+                    bottom: window.innerWidth < 768 ? 35 : 30,   // More bottom space on mobile for labels
+                    left: window.innerWidth < 768 ? 10 : 20      // Less left padding on mobile
                 },
                 // ADD AXIS TITLES
                 plugins: [
@@ -715,7 +750,7 @@
                             axisX: {
                                 axisTitle: 'Time',
                                 axisClass: 'ct-axis-title',
-                                offset: { x: 0, y: 50 },
+                                offset: { x: 0, y: window.innerWidth < 768 ? 40 : 50 },  // Less offset on mobile
                                 textAnchor: 'middle'
                             },
                             axisY: {
@@ -755,7 +790,7 @@
                             axisX: {
                                 axisTitle: 'Time',
                                 axisClass: 'ct-axis-title',
-                                offset: { x: 0, y: 50 },
+                                offset: { x: 0, y: window.innerWidth < 768 ? 40 : 50 },  // Less offset on mobile
                                 textAnchor: 'middle'
                             },
                             axisY: {
@@ -783,6 +818,8 @@
                     ui.loadingTds.style.display = 'none';
                     return;
                 }
+                
+                currentFeeds = feeds; // Store feeds for resize handler
                 
                 const latestFeed = feeds[feeds.length - 1];
                 
@@ -958,6 +995,23 @@
             if (iotConfig.pollIntervalMs > 0) {
                 setInterval(() => loadData(false), iotConfig.pollIntervalMs);
             }
+            
+            // Redraw charts on window resize to adjust labels
+            let resizeTimeout;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    // Redraw charts with new responsive settings
+                    if (phChartInstance && currentFeeds.length > 0) {
+                        const phData = buildPhChartData(currentFeeds);
+                        phChartInstance.update(phData.data, phData.options);
+                    }
+                    if (tdsChartInstance && currentFeeds.length > 0) {
+                        const tdsData = buildTdsChartData(currentFeeds);
+                        tdsChartInstance.update(tdsData.data, tdsData.options);
+                    }
+                }, 250);
+            });
         });
     </script>
 </body>
