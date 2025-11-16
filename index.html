@@ -30,6 +30,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
     <script src="https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
     
+    <!-- FIXED: Add Chartist Axis Title Plugin and its CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chartist-plugin-axistitle@latest/dist/chartist-plugin-axistitle.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chartist-plugin-axistitle@latest/dist/chartist-plugin-axistitle.min.js"></script>
+    
     <!-- 5. Load Icons (from Material Icons) -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
@@ -65,6 +69,16 @@
         }
         .dark .ct-grid {
             stroke: #374151; /* gray-700 */
+        }
+
+        /* Axis title styling */
+        .ct-axis-title {
+            font-size: 12px;
+            fill: #6b7280;
+            font-weight: 600;
+        }
+        .dark .ct-axis-title {
+            fill: #9ca3af;
         }
 
         .ct-line {
@@ -127,12 +141,12 @@
         }
 
         @keyframes logoMorph {
-            0% {  
+            0% { 
                 transform: scale(0.5) rotate(45deg);
                 opacity: 0;
                 filter: blur(10px);
             }
-            100% {  
+            100% { 
                 transform: scale(1) rotate(0deg);
                 opacity: 1;
                 filter: blur(0px);
@@ -140,11 +154,11 @@
         }
         
         @keyframes letterFadeIn {
-            from {  
+            from { 
                 opacity: 0;
                 transform: translateY(30px) scale(0.8);
             }
-            to {  
+            to { 
                 opacity: 1;
                 transform: translateY(0) scale(1);
             }
@@ -215,11 +229,11 @@
         }
 
         @keyframes slideUp {
-            from {  
+            from { 
                 opacity: 0;
                 transform: translateY(20px);
             }
-            to {  
+            to { 
                 opacity: 1;
                 transform: translateY(0);
             }
@@ -336,6 +350,8 @@
         .ct-chart {
             animation: fadeIn 0.8s ease-out 0.3s both;
         }
+
+        /* REMOVED the X-axis label rotation styles */
     </style>
 </head>
 <!-- 1. Body now transitions background color -->
@@ -386,8 +402,9 @@
         <!-- Main Content -->
         <div class="flex-1 flex flex-col overflow-hidden">
             <!-- 3. Glass Morphism Header (Dark mode updated) -->
+            <!-- CHANGE 10: Make Header More Compact on Mobile -->
             <header class="bg-white/80 backdrop-blur-md shadow-lg z-20 border-b border-gray-200/50 dark:bg-gray-800/80 dark:border-gray-700/50 transition-colors duration-300">
-                <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+                <div class="container mx-auto px-4 md:px-6 py-3 md:py-4 flex justify-between items-center">
                     <!-- Mobile Menu Toggle -->
                     <button id="menu-toggle" class="md:hidden text-gray-600 dark:text-gray-300">
                         <span class="material-icons text-3xl">menu</span>
@@ -409,9 +426,11 @@
             </header>
             
             <!-- 2. Main Content Area -->
-            <main class="flex-1 overflow-x-hidden overflow-y-auto p-6">
+            <!-- CHANGE 4: Optimize Main Content Padding -->
+            <main class="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-6">
                 <!-- 4. Premium Stats Cards (Dark mode updated) -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <!-- CHANGE 3: Improve Stats Card Layout on Mobile -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6">
                     
                     <!-- Latest TDS Card -->
                     <div class="stat-card bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl flex items-center space-x-4 border border-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:shadow-gray-900/50" style="--delay: 1">
@@ -459,27 +478,33 @@
                 </div>
 
                 <!-- 5. Enhanced Chart Cards (Dark mode updated) -->
-                <div class="grid grid-cols-1 gap-6 mb-6">
+                <!-- CHANGE 2: Make Chart Cards Stack Better on Mobile -->
+                <div class="grid grid-cols-1 gap-4 md:gap-6 mb-6">
                     
                     <!-- pH Trend Chart -->
-                    <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl relative border border-gray-100 transition-all duration-300 dark:bg-gray-800 dark:border-gray-700 dark:shadow-gray-900/50">
+                    <!-- CHANGE 8: Make Chart Card Padding Responsive -->
+                    <div class="bg-white p-4 md:p-6 rounded-xl shadow-lg hover:shadow-2xl relative border border-gray-100 transition-all duration-300 dark:bg-gray-800 dark:border-gray-700 dark:shadow-gray-900/50">
                         <div id="loading-ph" class="loading-overlay"><div class="spinner"></div></div>
                         <h3 class="text-xl font-semibold text-gray-800 mb-1 dark:text-gray-100">pH Trend</h3>
                         <p class="text-sm text-gray-500 mb-4 dark:text-gray-400">Recent acidity readings</p>
-                        <div id="chart-ph" class="ct-chart ct-major-tenth chart-ph h-64"></div>
+                        <!-- CHANGE 1: Update Chart Height for Responsive Design -->
+                        <div id="chart-ph" class="ct-chart ct-major-tenth chart-ph h-48 md:h-64 lg:h-80"></div>
                     </div>
                     
                     <!-- TDS Trend Chart -->
-                    <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl relative border border-gray-100 transition-all duration-300 dark:bg-gray-800 dark:border-gray-700 dark:shadow-gray-900/50">
+                    <!-- CHANGE 8: Make Chart Card Padding Responsive -->
+                    <div class="bg-white p-4 md:p-6 rounded-xl shadow-lg hover:shadow-2xl relative border border-gray-100 transition-all duration-300 dark:bg-gray-800 dark:border-gray-700 dark:shadow-gray-900/50">
                         <div id="loading-tds" class="loading-overlay"><div class="spinner"></div></div>
                         <h3 class="text-xl font-semibold text-gray-800 mb-1 dark:text-gray-100">TDS Trend (ppm)</h3>
                         <p class="text-sm text-gray-500 mb-4 dark:text-gray-400">Recent total dissolved solids</p>
-                        <div id="chart-tds" class="ct-chart ct-major-tenth chart-tds h-64"></div>
+                        <!-- CHANGE 1: Update Chart Height for Responsive Design -->
+                        <div id="chart-tds" class="ct-chart ct-major-tenth chart-tds h-48 md:h-64 lg:h-80"></div>
                     </div>
                 </div>
                 
                 <!-- 9. System Controls Section Enhancement (Dark mode updated) -->
-                <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl border border-gray-100 transition-all duration-300 dark:bg-gray-800 dark:border-gray-700 dark:shadow-gray-900/50">
+                <!-- CHANGE 9: Optimize System Controls Card for Mobile -->
+                <div class="bg-white p-4 md:p-6 rounded-xl shadow-lg hover:shadow-2xl border border-gray-100 transition-all duration-300 dark:bg-gray-800 dark:border-gray-700 dark:shadow-gray-900/50">
                     <div class="flex items-start space-x-4 mb-6">
                         <div class="p-3 bg-gradient-to-br from-emerald-100 to-emerald-200 text-emerald-600 rounded-xl shadow-inner dark:from-emerald-800/50 dark:to-emerald-900/50 dark:text-emerald-300">
                             <span class="material-icons text-3xl">power_settings_new</span>
@@ -490,7 +515,8 @@
                         </div>
                     </div>
                     
-                    <div id="pump-controls" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <!-- CHANGE 5: Make Pump Control Buttons More Responsive -->
+                    <div id="pump-controls" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                         <!-- Pump buttons will be generated by JS -->
                     </div>
                     <!-- Dark mode updated text color -->
@@ -604,17 +630,63 @@
                 });
             }
 
+            // CHANGE 6: Add Responsive Chart Label Handling
+            function getResponsiveChartLabels(feeds) {
+                const isMobile = window.innerWidth < 768;
+                return feeds.map((feed, index) => {
+                    const createdAt = feed.created_at ? new Date(feed.created_at) : null;
+                    if (!createdAt) return "";
+                    
+                    // On mobile, show every 3rd label to avoid crowding
+                    if (isMobile && (feeds.length - 1 - index) % 3 !== 0) return "";
+                    
+                    return createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                });
+            }
+
             // --- 6. CHART BUILDER FUNCTIONS ---
             
+            // UPDATED: Added plugin defaults and axis offsets
             const chartBaseOptions = {
                 fullWidth: true,
                 showArea: true,
                 lineSmooth: Chartist.Interpolation.cardinal({ tension: 0.2 }),
-                axisX: { showGrid: false },
-                axisY: { onlyInteger: false, offset: 50 },
-                chartPadding: { right: 30, left: 10 },
+                axisX: { 
+                    showGrid: true,  // Changed to true for better readability
+                    showLabel: true
+                },
+                axisY: { 
+                    onlyInteger: false, 
+                    offset: 60,  // Increased from 50 to accommodate labels
+                    showGrid: true,
+                    showLabel: true
+                },
+                chartPadding: { 
+                    top: 20,     // Added
+                    right: 30, 
+                    bottom: 30,  // Increased from implicit 0
+                    left: 20     // Increased from 10
+                },
+                // ADD AXIS TITLES
+                plugins: [
+                    Chartist.plugins.ctAxisTitle({
+                        axisX: {
+                            axisTitle: 'Time',
+                            axisClass: 'ct-axis-title',
+                            offset: { x: 0, y: 50 },
+                            textAnchor: 'middle'
+                        },
+                        axisY: {
+                            axisTitle: '',  // Will be set per chart
+                            axisClass: 'ct-axis-title',
+                            offset: { x: 0, y: 0 },
+                            flipTitle: true
+                        }
+                    })
+                ]
             };
             
+            /* REMOVED responsiveOptions
             const responsiveOptions = [
                 ['screen and (max-width: 640px)', {
                     axisX: {
@@ -622,33 +694,84 @@
                     },
                 }]
             ];
+            */
 
+            // UPDATED: To pass specific axis titles to the plugin
             function buildTdsChartData(feeds) {
-                const labels = getChartLabels(feeds);
+                // CHANGE 7: Update Chart Builder Functions to Use Responsive Labels
+                const labels = getResponsiveChartLabels(feeds);
                 const tdsSeries = feeds.map(feed => normalizeNumber(feed.field1));
+                
+                // Clone base options and add chart-specific overrides
+                const options = {
+                    ...chartBaseOptions,
+                    low: 0,
+                    axisY: { 
+                        ...chartBaseOptions.axisY, 
+                        labelInterpolationFnc: value => `${Math.round(value)} ppm` 
+                    },
+                    plugins: [
+                        Chartist.plugins.ctAxisTitle({
+                            axisX: {
+                                axisTitle: 'Time',
+                                axisClass: 'ct-axis-title',
+                                offset: { x: 0, y: 50 },
+                                textAnchor: 'middle'
+                            },
+                            axisY: {
+                                axisTitle: 'TDS (ppm)',
+                                axisClass: 'ct-axis-title',
+                                offset: { x: 0, y: 15 },
+                                flipTitle: true
+                            }
+                        })
+                    ]
+                };
+
                 return {
                     data: { labels, series: [tdsSeries] },
-                    options: {
-                        ...chartBaseOptions,
-                        low: 0,
-                        axisY: { ...chartBaseOptions.axisY, labelInterpolationFnc: value => `${Math.round(value)} ppm` },
-                    },
-                    responsiveOptions,
+                    options: options,
+                    // responsiveOptions, // Removed
                 };
             }
 
+            // UPDATED: To pass specific axis titles to the plugin
             function buildPhChartData(feeds) {
-                const labels = getChartLabels(feeds);
+                // CHANGE 7: Update Chart Builder Functions to Use Responsive Labels
+                const labels = getResponsiveChartLabels(feeds);
                 const phSeries = feeds.map(feed => normalizeNumber(feed.field2));
+
+                // Clone base options and add chart-specific overrides
+                const options = {
+                    ...chartBaseOptions,
+                    low: 2,
+                    high: 12,
+                    axisY: { 
+                        ...chartBaseOptions.axisY, 
+                        labelInterpolationFnc: value => value.toFixed(1) 
+                    },
+                    plugins: [
+                        Chartist.plugins.ctAxisTitle({
+                            axisX: {
+                                axisTitle: 'Time',
+                                axisClass: 'ct-axis-title',
+                                offset: { x: 0, y: 50 },
+                                textAnchor: 'middle'
+                            },
+                            axisY: {
+                                axisTitle: 'pH Level',
+                                axisClass: 'ct-axis-title',
+                                offset: { x: 0, y: 15 },
+                                flipTitle: true
+                            }
+                        })
+                    ]
+                };
+
                 return {
                     data: { labels, series: [phSeries] },
-                    options: {
-                        ...chartBaseOptions,
-                        low: 2,
-                        high: 12,
-                        axisY: { ...chartBaseOptions.axisY, labelInterpolationFnc: value => value.toFixed(1) },
-                    },
-                    responsiveOptions,
+                    options: options,
+                    // responsiveOptions, // Removed
                 };
             }
             
@@ -690,13 +813,13 @@
                 if (phChartInstance) {
                     phChartInstance.update(phChartData.data, phChartData.options);
                 } else {
-                    phChartInstance = new Chartist.Line('#chart-ph', phChartData.data, phChartData.options, phChartData.responsiveOptions);
+                    phChartInstance = new Chartist.Line('#chart-ph', phChartData.data, phChartData.options); // Removed responsiveOptions
                 }
                 
                 if (tdsChartInstance) {
                     tdsChartInstance.update(tdsChartData.data, tdsChartData.options);
                 } else {
-                    tdsChartInstance = new Chartist.Line('#chart-tds', tdsChartData.data, tdsChartData.options, tdsChartData.responsiveOptions);
+                    tdsChartInstance = new Chartist.Line('#chart-tds', tdsChartData.data, tdsChartData.options); // Removed responsiveOptions
                 }
                 
                 ui.loadingPh.style.display = 'none';
@@ -805,6 +928,10 @@
             ui.refreshButton.addEventListener('click', () => {
                 ui.refreshButton.classList.add('refreshing');
                 loadData(true);
+                // Re-draw charts on manual refresh to apply new label logic if window resized
+                if (phChartInstance) phChartInstance.update(phChartInstance.data, phChartInstance.options);
+                if (tdsChartInstance) tdsChartInstance.update(tdsChartInstance.data, tdsChartInstance.options);
+                
                 setTimeout(() => {
                     ui.refreshButton.classList.remove('refreshing');
                 }, 1000);
