@@ -238,6 +238,14 @@
         #sidebar {
             transition: transform 0.3s ease-in-out;
         }
+        
+        /* NEW: Notification Sidebar transition */
+        #notification-sidebar {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* REMOVED: Notification Overlay transition styles */
+
 
         /* --- 1. NEW MICRO-ANIMATIONS --- */
         @keyframes pulse {
@@ -405,6 +413,15 @@
         </div>
     </div>
 
+    <!-- The z-index values are important:
+         - Splash: 50
+         - Modals: 50 (Confirm) / 40 (Analytics)
+         - Left Sidebar: 30
+         - Left Overlay: 20
+         - Header: 20
+         - Notification Sidebar: 30
+         - Notification Overlay: 20
+    -->
     <div id="app-content" class="flex h-screen">
         <!-- NEW: Mobile Sidebar Overlay -->
         <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-20 md:hidden hidden"></div>
@@ -461,14 +478,23 @@
                             <span class="material-icons">file_download</span>
                         </button>
 
-                        <span class="text-gray-600 hidden md:block dark:text-gray-300">Welcome, Operator</span>
+                        <!-- NEW: Notification Bell Button -->
+                        <button id="notification-button" class="p-2 rounded-full text-gray-500 dark:text-gray-400 focus:outline-none transition-colors duration-300 hover:bg-gray-100 dark:hover:bg-gray-700 relative" title="Notifications">
+                            <span class="material-icons">notifications</span>
+                            <span id="notification-badge" class="absolute top-1 right-1 flex h-3 w-3 -mt-px -mr-px hidden">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                            </span>
+                        </button>
+
                     </div>
                 </div>
             </header>
             
             <!-- 2. Main Content Area -->
             <!-- CHANGE 4: Optimize Main Content Padding -->
-            <main class="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-6">
+            <!-- FIXED: Changed overflow-y-auto to overflow-y-scroll to prevent layout jiggle -->
+            <main class="flex-1 overflow-x-hidden overflow-y-scroll p-4 md:p-6">
                 <!-- 4. Premium Stats Cards (Dark mode updated) -->
                 <!-- CHANGE 3: Improve Stats Card Layout on Mobile -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6">
@@ -569,6 +595,25 @@
                 </div>
             </main>
         </div>
+
+        <!-- NEW: Notification Sidebar -->
+        <!-- UPDATED: Removed opacity-0, added bg-black/50 for instant overlay -->
+        <div id="notification-overlay" class="fixed inset-0 z-20 hidden pointer-events-none bg-black/50"></div>
+        <aside id="notification-sidebar" class="w-80 bg-white dark:bg-gray-900 text-gray-900 dark:text-white flex flex-col fixed inset-y-0 right-0 transform translate-x-full z-30 shadow-2xl border-l dark:border-gray-700">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-4 border-b dark:border-gray-700">
+                <h3 id="notification-title" class="text-lg font-semibold">Notifications</h3>
+                <button id="notification-close-btn" class="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <!-- Notification List -->
+            <div id="notification-list" class="flex-1 overflow-y-auto p-4 space-y-3">
+                <!-- Notifications will be injected by JS -->
+                <p id="notification-placeholder" class="text-sm text-gray-500 dark:text-gray-400 text-center mt-4">No new notifications.</p>
+            </div>
+        </aside>
+
     </div>
 
     <!-- NEW: Analytics Details Modal -->
@@ -632,13 +677,14 @@
             
             // --- 2. GLOBAL STATE ---
             let pumpStates = { 1: false, 2: false, 3: false, 4: false };
-            let pumpUpdating = null;
+            let lastPumpStates = { 1: false, 2: false, 3: false, 4: false }; // NEW: For notification diff
             let phChartInstance;
             let tdsChartInstance;
             let currentFeeds = []; // Added for resize handler
             let currentAnalytics = {}; // NEW: To store full analytics data
-            // Store the element that opened the modal
-            let lastFocusedElement = null;
+            let lastFocusedElement = null; // Store the element that opened the modal
+            let notifications = []; // NEW: Store notifications
+            let unreadNotifications = 0; // NEW: Count of unread notifications
 
             // NEW: Make pump names globally accessible for modal
             const pumpNames = {
@@ -654,28 +700,34 @@
                 ph: document.getElementById('latest-ph'),
                 updateTime: document.getElementById('last-update-time'),
                 updateDate: document.getElementById('last-update-date'),
-                // REMOVED: pumpControls
                 errorMessage: document.getElementById('error-message'),
                 refreshButton: document.getElementById('refresh-button'),
                 loadingPh: document.getElementById('loading-ph'),
                 loadingTds: document.getElementById('loading-tds'),
                 sidebar: document.getElementById('sidebar'),
                 menuToggle: document.getElementById('menu-toggle'),
-                // NEW: Theme toggle
                 themeToggle: document.getElementById('theme-toggle'),
-                sidebarOverlay: document.getElementById('sidebar-overlay'), // NEW
-                downloadCsvButton: document.getElementById('download-csv-button'), // NEW
-                pumpAnalyticsGrid: document.getElementById('pump-analytics-grid'), // NEW
-                // NEW: Analytics Modal UI
+                sidebarOverlay: document.getElementById('sidebar-overlay'), 
+                downloadCsvButton: document.getElementById('download-csv-button'), 
+                pumpAnalyticsGrid: document.getElementById('pump-analytics-grid'), 
+                // Analytics Modal UI
                 modalOverlay: document.getElementById('analytics-modal-overlay'),
                 modalTitle: document.getElementById('modal-title'),
                 modalContent: document.getElementById('modal-content'),
                 modalCloseBtn: document.getElementById('modal-close-btn'),
-                // NEW: Confirmation Modal UI
+                // Confirmation Modal UI
                 confirmModalOverlay: document.getElementById('confirm-modal-overlay'),
                 confirmModalCloseBtn: document.getElementById('confirm-modal-close-btn'),
                 confirmModalCancelBtn: document.getElementById('confirm-modal-cancel-btn'),
                 confirmModalDownloadBtn: document.getElementById('confirm-modal-download-btn'),
+                // NEW: Notification UI
+                notificationButton: document.getElementById('notification-button'),
+                notificationBadge: document.getElementById('notification-badge'),
+                notificationSidebar: document.getElementById('notification-sidebar'),
+                notificationOverlay: document.getElementById('notification-overlay'),
+                notificationCloseBtn: document.getElementById('notification-close-btn'),
+                notificationList: document.getElementById('notification-list'),
+                notificationPlaceholder: document.getElementById('notification-placeholder'),
             };
 
             // --- 4. THINGSPEAK API FUNCTIONS ---
@@ -694,8 +746,6 @@
                 };
             }
 
-            // REMOVED: async function updatePumpStates(states, statusMessage) { ... }
-
             // --- 5. HELPER FUNCTIONS ---
             
             function normalizeNumber(value) {
@@ -703,7 +753,15 @@
                 return Number.isFinite(parsed) ? parsed : null;
             }
 
-            // REMOVED: function getPumpStates(feed = {}) { ... }
+            // UPDATED: Renamed from getPumpStates, used by notifications
+            function getPumpStatesFromFeed(feed = {}) {
+                return {
+                    1: feed.field3 === "1",
+                    2: feed.field4 === "1",
+                    3: feed.field5 === "1",
+                    4: feed.field6 === "1",
+                };
+            }
 
             function getChartLabels(feeds) {
                 return feeds.map(feed => {
@@ -712,7 +770,6 @@
                 });
             }
  
-            // CHANGE 6: Add Responsive Chart Label Handling
             function getResponsiveChartLabels(feeds) {
                 const isMobile = window.innerWidth < 768;
                 const feedCount = feeds.length;
@@ -721,20 +778,16 @@
                     const createdAt = feed.created_at ? new Date(feed.created_at) : null;
                     if (!createdAt) return "";
                     
-                    // Determine skip interval based on screen size and data points
                     let skipInterval;
                     if (isMobile) {
-                        // On mobile, show fewer labels
                         if (feedCount > 30) skipInterval = 6;
                         else if (feedCount > 20) skipInterval = 4;
                         else skipInterval = 3;
                     } else {
-                        // On desktop, show more labels
                         if (feedCount > 30) skipInterval = 3;
                         else skipInterval = 2;
                     }
                     
-                    // Show first, last, and every nth label
                     if (index === 0 || index === feedCount - 1 || index % skipInterval === 0) {
                         return createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
                     }
@@ -745,28 +798,26 @@
 
             // --- 6. CHART BUILDER FUNCTIONS ---
             
-            // UPDATED: Added plugin defaults and axis offsets
             const chartBaseOptions = {
                 fullWidth: true,
                 showArea: true,
                 lineSmooth: Chartist.Interpolation.cardinal({ tension: 0.2 }),
                 axisX: { 
-                    showGrid: true,  // Changed to true for better readability
+                    showGrid: true, 
                     showLabel: true
                 },
                 axisY: { 
                     onlyInteger: false, 
-                    offset: 60,  // Increased from 50 to accommodate labels
+                    offset: 60, 
                     showGrid: true,
                     showLabel: true
                 },
                 chartPadding: { 
                     top: 20,
-                    right: window.innerWidth < 768 ? 15 : 30,    // Less padding on mobile
-                    bottom: window.innerWidth < 768 ? 35 : 30,   // More bottom space on mobile for labels
-                    left: window.innerWidth < 768 ? 10 : 20      // Less left padding on mobile
+                    right: window.innerWidth < 768 ? 15 : 30,
+                    bottom: window.innerWidth < 768 ? 35 : 30,
+                    left: window.innerWidth < 768 ? 10 : 20
                 },
-                // ADD AXIS TITLES
                 plugins: [
                     Chartist.plugins.ctAxisTitle({
                         axisX: {
@@ -776,7 +827,7 @@
                             textAnchor: 'middle'
                         },
                         axisY: {
-                            axisTitle: '',  // Will be set per chart
+                            axisTitle: '',
                             axisClass: 'ct-axis-title',
                             offset: { x: 0, y: 0 },
                             flipTitle: true
@@ -785,23 +836,10 @@
                 ]
             };
             
-            /* REMOVED responsiveOptions
-            const responsiveOptions = [
-                ['screen and (max-width: 640px)', {
-                    axisX: {
-                        labelInterpolationFnc: (value, index) => index % 2 === 0 ? value : null,
-                    },
-                }]
-            ];
-            */
-
-            // UPDATED: To pass specific axis titles to the plugin
             function buildTdsChartData(feeds) {
-                // CHANGE 7: Update Chart Builder Functions to Use Responsive Labels
                 const labels = getResponsiveChartLabels(feeds);
                 const tdsSeries = feeds.map(feed => normalizeNumber(feed.field1));
                 
-                // Clone base options and add chart-specific overrides
                 const options = {
                     ...chartBaseOptions,
                     low: 0,
@@ -814,7 +852,7 @@
                             axisX: {
                                 axisTitle: 'Time',
                                 axisClass: 'ct-axis-title',
-                                offset: { x: 0, y: window.innerWidth < 768 ? 40 : 50 },  // Less offset on mobile
+                                offset: { x: 0, y: window.innerWidth < 768 ? 40 : 50 },
                                 textAnchor: 'middle'
                             },
                             axisY: {
@@ -830,17 +868,13 @@
                 return {
                     data: { labels, series: [tdsSeries] },
                     options: options,
-                    // responsiveOptions, // Removed
                 };
             }
 
-            // UPDATED: To pass specific axis titles to the plugin
             function buildPhChartData(feeds) {
-                // CHANGE 7: Update Chart Builder Functions to Use Responsive Labels
                 const labels = getResponsiveChartLabels(feeds);
                 const phSeries = feeds.map(feed => normalizeNumber(feed.field2));
 
-                // Clone base options and add chart-specific overrides
                 const options = {
                     ...chartBaseOptions,
                     low: 2,
@@ -854,7 +888,7 @@
                             axisX: {
                                 axisTitle: 'Time',
                                 axisClass: 'ct-axis-title',
-                                offset: { x: 0, y: window.innerWidth < 768 ? 40 : 50 },  // Less offset on mobile
+                                offset: { x: 0, y: window.innerWidth < 768 ? 40 : 50 },
                                 textAnchor: 'middle'
                             },
                             axisY: {
@@ -870,7 +904,6 @@
                 return {
                     data: { labels, series: [phSeries] },
                     options: options,
-                    // responsiveOptions, // Removed
                 };
             }
             
@@ -883,7 +916,7 @@
                     return;
                 }
                 
-                currentFeeds = feeds; // Store feeds for resize handler
+                currentFeeds = feeds; 
                 
                 const latestFeed = feeds[feeds.length - 1];
                 
@@ -903,14 +936,17 @@
                     ui.updateDate.textContent = "No data";
                 }
                 
-                // REMOVED: Update Pump States (getPumpStates, renderPumpButtons)
+                // NEW: Check for pump state changes and send notifications
+                pumpStates = getPumpStatesFromFeed(latestFeed);
+                checkPumpChangesForNotifications(pumpStates, lastPumpStates);
+                lastPumpStates = { ...pumpStates }; // Update the "last" state
 
                 // NEW: Calculate and Render Pump Analytics
                 try {
                     const analytics = calculatePumpAnalytics(feeds);
-                    currentAnalytics = analytics; // NEW: Store analytics globally
+                    currentAnalytics = analytics; 
                     renderPumpAnalytics(analytics);
-                    setErrorMessage(null); // Clear any previous errors
+                    setErrorMessage(null); 
                 } catch (err) {
                     setErrorMessage("Could not calculate analytics.");
                 }
@@ -922,24 +958,19 @@
                 if (phChartInstance) {
                     phChartInstance.update(phChartData.data, phChartData.options);
                 } else {
-                    phChartInstance = new Chartist.Line('#chart-ph', phChartData.data, phChartData.options); // Removed responsiveOptions
+                    phChartInstance = new Chartist.Line('#chart-ph', phChartData.data, phChartData.options); 
                 }
                 
                 if (tdsChartInstance) {
                     tdsChartInstance.update(tdsChartData.data, tdsChartData.options);
                 } else {
-                    tdsChartInstance = new Chartist.Line('#chart-tds', tdsChartData.data, tdsChartData.options); // Removed responsiveOptions
+                    tdsChartInstance = new Chartist.Line('#chart-tds', tdsChartData.data, tdsChartData.options); 
                 }
                 
                 ui.loadingPh.style.display = 'none';
                 ui.loadingTds.style.display = 'none';
             }
-            
-            // REMOVED: function renderPumpButtons() { ... }
 
-            // REMOVED: async function handleTogglePump(event) { ... }
-
-            // NEW: Function to calculate pump analytics from feeds
             function calculatePumpAnalytics(feeds) {
                 let analytics = {
                     1: { dosesList: [] }, // Pump 1 (field3)
@@ -948,7 +979,6 @@
                     4: { dosesList: [] }  // Pump 4 (field6)
                 };
 
-                // Iterate forwards to collect all dose timestamps
                 for (const feed of feeds) {
                     if (feed.field3 === "1") analytics[1].dosesList.push(new Date(feed.created_at));
                     if (feed.field4 === "1") analytics[2].dosesList.push(new Date(feed.created_at));
@@ -956,7 +986,6 @@
                     if (feed.field6 === "1") analytics[4].dosesList.push(new Date(feed.created_at));
                 }
 
-                // Now, process the collected lists to get totalDoses and lastDosed
                 let processedAnalytics = {};
                 for (const num in analytics) {
                     const list = analytics[num].dosesList;
@@ -965,15 +994,14 @@
                     processedAnalytics[num] = {
                         totalDoses: totalDoses,
                         lastDosed: lastDosed,
-                        dosesList: list // Pass the full list along
+                        dosesList: list 
                     };
                 }
                 return processedAnalytics;
             }
 
-            // NEW: Function to render the analytics cards
             function renderPumpAnalytics(analytics) {
-                ui.pumpAnalyticsGrid.innerHTML = ''; // Clear loading text
+                ui.pumpAnalyticsGrid.innerHTML = ''; 
                 
                 [1, 2, 3, 4].forEach(num => {
                     const data = analytics[num];
@@ -981,7 +1009,6 @@
                         ? data.lastDosed.toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true }) 
                         : 'Never in this period';
                     
-                    // NEW: Added data-pump-id and cursor-pointer for click events
                     const cardHTML = `
                         <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg shadow-inner border border-gray-200 dark:border-gray-700 cursor-pointer transition-colors hover:bg-gray-100 dark:hover:bg-gray-600/50" data-pump-id="${num}">
                             <p class="text-sm font-semibold text-emerald-600 dark:text-emerald-400 truncate pointer-events-none">${pumpNames[num]}</p>
@@ -998,61 +1025,45 @@
                 });
             }
 
-            // NEW: Functions to control the analytics modal
+            // --- Modal & Notification Functions ---
+
             function openAnalyticsModal(pumpId) {
                 const data = currentAnalytics[pumpId];
                 if (!data) return;
-
-                // Store the currently focused element
                 lastFocusedElement = document.activeElement;
-
                 ui.modalTitle.textContent = `Dose Log: ${pumpNames[pumpId]}`;
-
                 if (data.dosesList.length === 0) {
                     ui.modalContent.innerHTML = `<p class="text-gray-500 dark:text-gray-400">No dosing events recorded in this period.</p>`;
                 } else {
-                    // Create a list, reversed so newest is first
                     const listHtml = data.dosesList
                         .map(date => `<li class="py-1 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700">${date.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short', hour12: true })}</li>`)
                         .reverse()
                         .join('');
                     ui.modalContent.innerHTML = `<ul class="space-y-1 text-sm text-gray-700 dark:text-gray-300">${listHtml}</ul>`;
                 }
-
-                // Add ARIA attributes
                 ui.modalOverlay.setAttribute('role', 'dialog');
                 ui.modalOverlay.setAttribute('aria-modal', 'true');
                 ui.modalOverlay.setAttribute('aria-labelledby', 'modal-title');
-
                 ui.modalOverlay.classList.remove('hidden');
-                // Trigger transition
                 setTimeout(() => {
                     ui.modalOverlay.classList.add('open');
-                    // Focus the close button for keyboard accessibility
                     ui.modalCloseBtn.focus();
-                    // Trap focus in modal
-                    trapFocus(ui.modalOverlay, closeAnalyticsModal); // Pass close function
+                    trapFocus(ui.modalOverlay, closeAnalyticsModal);
                 }, 10);
             }
 
             function closeAnalyticsModal() {
                 ui.modalOverlay.classList.remove('open');
-                
-                // Remove focus trap event listeners
                 if (ui.modalOverlay._trapFocusHandlers) {
                     ui.modalOverlay.removeEventListener('keydown', ui.modalOverlay._trapFocusHandlers.handleTabKey);
                     ui.modalOverlay.removeEventListener('keydown', ui.modalOverlay._trapFocusHandlers.handleEscapeKey);
                     delete ui.modalOverlay._trapFocusHandlers;
                 }
-                
-                // Wait for transition to finish before hiding
                 setTimeout(() => {
                     ui.modalOverlay.classList.add('hidden');
-                    // Remove ARIA attributes
                     ui.modalOverlay.removeAttribute('role');
                     ui.modalOverlay.removeAttribute('aria-modal');
                     ui.modalOverlay.removeAttribute('aria-labelledby');
-                    // Return focus to the element that opened the modal
                     if (lastFocusedElement) {
                         lastFocusedElement.focus();
                         lastFocusedElement = null;
@@ -1060,43 +1071,31 @@
                 }, 300);
             }
 
-            // --- NEW: Download Confirmation Modal Functions ---
             function openConfirmModal() {
-                // Store the currently focused element
                 lastFocusedElement = document.activeElement;
-                
-                // Add ARIA attributes
                 ui.confirmModalOverlay.setAttribute('role', 'dialog');
                 ui.confirmModalOverlay.setAttribute('aria-modal', 'true');
                 ui.confirmModalOverlay.setAttribute('aria-labelledby', 'confirm-modal-title');
-
                 ui.confirmModalOverlay.classList.remove('hidden');
                 setTimeout(() => {
                     ui.confirmModalOverlay.classList.add('open');
-                    // Focus the cancel button
                     ui.confirmModalCancelBtn.focus();
-                    // Trap focus
-                    trapFocus(ui.confirmModalOverlay, closeConfirmModal); // Pass close function
+                    trapFocus(ui.confirmModalOverlay, closeConfirmModal);
                 }, 10);
             }
 
             function closeConfirmModal() {
                 ui.confirmModalOverlay.classList.remove('open');
-                
-                // Remove focus trap event listeners
                 if (ui.confirmModalOverlay._trapFocusHandlers) {
                     ui.confirmModalOverlay.removeEventListener('keydown', ui.confirmModalOverlay._trapFocusHandlers.handleTabKey);
                     ui.confirmModalOverlay.removeEventListener('keydown', ui.confirmModalOverlay._trapFocusHandlers.handleEscapeKey);
                     delete ui.confirmModalOverlay._trapFocusHandlers;
                 }
-                
                 setTimeout(() => {
                     ui.confirmModalOverlay.classList.add('hidden');
-                    // Remove ARIA attributes
                     ui.confirmModalOverlay.removeAttribute('role');
                     ui.confirmModalOverlay.removeAttribute('aria-modal');
                     ui.confirmModalOverlay.removeAttribute('aria-labelledby');
-                    // Return focus
                     if (lastFocusedElement) {
                         lastFocusedElement.focus();
                         lastFocusedElement = null;
@@ -1111,7 +1110,111 @@
                 closeConfirmModal();
             }
 
-            // Focus trap for modal (now generic)
+            // NEW: Notification Sidebar Functions
+            function openNotificationSidebar() {
+                lastFocusedElement = document.activeElement;
+                
+                // Make overlay visible
+                ui.notificationOverlay.classList.remove('hidden');
+                ui.notificationOverlay.classList.add('pointer-events-auto');
+                
+                // Slide in sidebar
+                ui.notificationSidebar.classList.remove('translate-x-full');
+                
+                // Set ARIA attributes
+                ui.notificationSidebar.setAttribute('role', 'dialog');
+                ui.notificationSidebar.setAttribute('aria-modal', 'true');
+                ui.notificationSidebar.setAttribute('aria-labelledby', 'notification-title');
+
+                setTimeout(() => {
+                    ui.notificationCloseBtn.focus();
+                    trapFocus(ui.notificationSidebar, closeNotificationSidebar);
+                }, 10); // Wait for transition to start
+                
+                // Clear badge
+                unreadNotifications = 0;
+                ui.notificationBadge.classList.add('hidden');
+            }
+
+            function closeNotificationSidebar() {
+                // Start slide-out animation
+                ui.notificationSidebar.classList.add('translate-x-full');
+                
+                // Remove ARIA attributes
+                ui.notificationSidebar.removeAttribute('role');
+                ui.notificationSidebar.removeAttribute('aria-modal');
+                ui.notificationSidebar.removeAttribute('aria-labelledby');
+                
+                // Remove focus trap listeners
+                if (ui.notificationSidebar._trapFocusHandlers) {
+                    ui.notificationSidebar.removeEventListener('keydown', ui.notificationSidebar._trapFocusHandlers.handleTabKey);
+                    ui.notificationSidebar.removeEventListener('keydown', ui.notificationSidebar._trapFocusHandlers.handleEscapeKey);
+                    delete ui.notificationSidebar._trapFocusHandlers;
+                }
+
+                // Return focus
+                if (lastFocusedElement) {
+                    lastFocusedElement.focus();
+                    lastFocusedElement = null;
+                }
+                
+                // Hide overlay instantly
+                ui.notificationOverlay.classList.add('hidden');
+                ui.notificationOverlay.classList.remove('pointer-events-auto');
+            }
+            
+            // NEW: Notification Generation
+            function checkPumpChangesForNotifications(current, last) {
+                [1, 2, 3, 4].forEach(num => {
+                    // Check if pump *just* turned ON (was false, is now true)
+                    if (current[num] && !last[num]) {
+                        addNotification(
+                            pumpNames[num],
+                            "Dosing pump activated by system.",
+                            "power"
+                        );
+                    }
+                });
+            }
+
+            function addNotification(title, message, icon) {
+                const newNotification = {
+                    id: Date.now(),
+                    title,
+                    message,
+                    icon,
+                    time: new Date()
+                };
+                
+                notifications.unshift(newNotification); // Add to start of array
+                unreadNotifications++;
+                
+                renderNotifications();
+                ui.notificationBadge.classList.remove('hidden');
+            }
+
+            function renderNotifications() {
+                if (notifications.length === 0) {
+                    ui.notificationPlaceholder.classList.remove('hidden');
+                    ui.notificationList.innerHTML = '';
+                } else {
+                    ui.notificationPlaceholder.classList.add('hidden');
+                    ui.notificationList.innerHTML = notifications.map(n => `
+                        <div class="flex items-start space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                            <div class="p-2 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-300 rounded-full">
+                                <span class="material-icons text-lg">${n.icon}</span>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-gray-900 dark:text-white">${n.title}</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-300">${n.message}</p>
+                                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">${n.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</p>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+
+
             function trapFocus(element, closeFunction) {
                 const focusableElements = element.querySelectorAll(
                     'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -1121,15 +1224,12 @@
 
                 function handleTabKey(e) {
                     if (e.key !== 'Tab') return;
-
                     if (e.shiftKey) {
-                        // Shift + Tab
                         if (document.activeElement === firstFocusable) {
                             e.preventDefault();
                             lastFocusable.focus();
                         }
                     } else {
-                        // Tab
                         if (document.activeElement === lastFocusable) {
                             e.preventDefault();
                             firstFocusable.focus();
@@ -1139,14 +1239,12 @@
 
                 function handleEscapeKey(e) {
                     if (e.key === 'Escape') {
-                        closeFunction(); // Use the passed close function
+                        closeFunction();
                     }
                 }
 
                 element.addEventListener('keydown', handleTabKey);
                 element.addEventListener('keydown', handleEscapeKey);
-
-                // Store listeners so we can remove them later
                 element._trapFocusHandlers = { handleTabKey, handleEscapeKey };
             }
 
@@ -1163,7 +1261,6 @@
                     const newFeeds = (response.feeds || []).slice(-MAX_POINTS);
                     updateDashboardUI(newFeeds);
                 } catch (err) {
-                    // Enhanced error handling
                     if (!navigator.onLine) {
                         setErrorMessage("No internet connection. Please check your network.");
                     } else if (err.message.includes('429')) {
@@ -1189,43 +1286,31 @@
             // Sidebar toggle for mobile
             ui.menuToggle.addEventListener('click', () => {
                 ui.sidebar.classList.toggle('-translate-x-full');
-                ui.sidebarOverlay.classList.toggle('hidden'); // NEW
+                ui.sidebarOverlay.classList.toggle('hidden'); 
             });
             
-            // NEW: Add listener to overlay to close sidebar
             ui.sidebarOverlay.addEventListener('click', () => {
                 ui.sidebar.classList.add('-translate-x-full');
                 ui.sidebarOverlay.classList.add('hidden');
             });
 
-            // NEW: Add listener to sidebar links to close menu on click
             ui.sidebar.querySelectorAll('a').forEach(link => {
                 link.addEventListener('click', () => {
-                    // Only close if in mobile view (i.e., overlay is not hidden)
                     if (!ui.sidebarOverlay.classList.contains('hidden')) {
                         ui.sidebar.classList.add('-translate-x-full');
                         ui.sidebarOverlay.classList.add('hidden');
                     }
-                    // (In a real app, navigation would happen here)
                 });
             });
             
-            // NEW: Theme toggle logic
             ui.themeToggle.addEventListener('click', () => {
-                // Toggle dark class on <html>
                 const isDark = document.documentElement.classList.toggle('dark');
-                // Save preference
                 localStorage.theme = isDark ? 'dark' : 'light';
-                
-                // Note: The icons swap automatically thanks to the `dark:hidden`
-                // and `hidden dark:inline` classes in the HTML.
             });
 
-            // 7. Animated Refresh Button
             ui.refreshButton.addEventListener('click', () => {
                 ui.refreshButton.classList.add('refreshing');
                 loadData(true);
-                // Re-draw charts on manual refresh to apply new label logic if window resized
                 if (phChartInstance) phChartInstance.update(phChartInstance.data, phChartInstance.options);
                 if (tdsChartInstance) tdsChartInstance.update(tdsChartInstance.data, tdsChartInstance.options);
                 
@@ -1236,10 +1321,8 @@
             
             // --- UPDATED Event Listener Section ---
 
-            // NEW: Download CSV Button Listener now opens confirm modal
             ui.downloadCsvButton.addEventListener('click', openConfirmModal);
 
-            // NEW: Listen for analytics modal clicks
             ui.pumpAnalyticsGrid.addEventListener('click', (e) => {
                 const card = e.target.closest('[data-pump-id]');
                 if (card) {
@@ -1247,7 +1330,7 @@
                 }
             });
 
-            // NEW: Analytics Modal close button listeners
+            // Analytics Modal close button listeners
             ui.modalCloseBtn.addEventListener('click', closeAnalyticsModal);
             ui.modalOverlay.addEventListener('click', (e) => {
                 if (e.target === ui.modalOverlay) {
@@ -1255,7 +1338,7 @@
                 }
             });
 
-            // NEW: Confirmation Modal button listeners
+            // Confirmation Modal button listeners
             ui.confirmModalCloseBtn.addEventListener('click', closeConfirmModal);
             ui.confirmModalCancelBtn.addEventListener('click', closeConfirmModal);
             ui.confirmModalOverlay.addEventListener('click', (e) => {
@@ -1264,6 +1347,11 @@
                 }
             });
             ui.confirmModalDownloadBtn.addEventListener('click', handleConfirmDownload);
+
+            // NEW: Notification Sidebar Listeners
+            ui.notificationButton.addEventListener('click', openNotificationSidebar);
+            ui.notificationCloseBtn.addEventListener('click', closeNotificationSidebar);
+            ui.notificationOverlay.addEventListener('click', closeNotificationSidebar);
 
 
             // --- 9. SPLASH SCREEN LOGIC ---
@@ -1291,7 +1379,6 @@
             window.addEventListener('resize', () => {
                 clearTimeout(resizeTimeout);
                 resizeTimeout = setTimeout(() => {
-                    // Redraw charts with new responsive settings
                     if (phChartInstance && currentFeeds.length > 0) {
                         const phData = buildPhChartData(currentFeeds);
                         phChartInstance.update(phData.data, phChartInstance.options);
@@ -1300,7 +1387,7 @@
                         const tdsData = buildTdsChartData(currentFeeds);
                         tdsChartInstance.update(tdsData.data, tdsChartInstance.options);
                     }
-                }, 500); // Increased from 250ms to 500ms for better performance
+                }, 500); 
             });
         });
     </script>
