@@ -440,6 +440,12 @@
                         <button id="refresh-button" class="p-2 rounded-full text-gray-500 dark:text-gray-400 focus:outline-none">
                             <span class="material-icons">refresh</span>
                         </button>
+
+                        <!-- NEW: Download CSV Button -->
+                        <button id="download-csv-button" class="p-2 rounded-full text-gray-500 dark:text-gray-400 focus:outline-none transition-colors duration-300 hover:bg-gray-100 dark:hover:bg-gray-700" title="Download All Data (CSV)">
+                            <span class="material-icons">file_download</span>
+                        </button>
+
                         <span class="text-gray-600 hidden md:block dark:text-gray-300">Welcome, Operator</span>
                     </div>
                 </div>
@@ -583,7 +589,8 @@
                 menuToggle: document.getElementById('menu-toggle'),
                 // NEW: Theme toggle
                 themeToggle: document.getElementById('theme-toggle'),
-                sidebarOverlay: document.getElementById('sidebar-overlay') // NEW
+                sidebarOverlay: document.getElementById('sidebar-overlay'), // NEW
+                downloadCsvButton: document.getElementById('download-csv-button') // NEW
             };
 
             // --- 4. THINGSPEAK API FUNCTIONS ---
@@ -648,10 +655,10 @@
             function getChartLabels(feeds) {
                 return feeds.map(feed => {
                     const createdAt = feed.created_at ? new Date(feed.created_at) : null;
-                    return createdAt ? createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
+                    return createdAt ? createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : "";
                 });
             }
-
+ 
             // CHANGE 6: Add Responsive Chart Label Handling
             function getResponsiveChartLabels(feeds) {
                 const isMobile = window.innerWidth < 768;
@@ -676,7 +683,7 @@
                     
                     // Show first, last, and every nth label
                     if (index === 0 || index === feedCount - 1 || index % skipInterval === 0) {
-                        return createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        return createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
                     }
                     
                     return "";
@@ -997,6 +1004,16 @@
                 }, 1000);
             });
             
+            // NEW: Download CSV Button Listener
+            ui.downloadCsvButton.addEventListener('click', () => {
+                const { channelId, readApiKey } = iotConfig;
+                // Construct the download URL
+                const csvUrl = `https://api.thingspeak.com/channels/${channelId}/feeds.csv?api_key=${readApiKey}`;
+                
+                // Open the URL in a new tab, which will trigger the browser's download
+                window.open(csvUrl, '_blank');
+            });
+
             ui.pumpControls.addEventListener('click', handleTogglePump);
             
             // --- 9. SPLASH SCREEN LOGIC ---
