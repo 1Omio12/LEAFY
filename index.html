@@ -1,23 +1,18 @@
 <!DOCTYPE html>
-<!-- 1. Added `lang` and `class="dark"` placeholder -->
 <html lang="en" class="">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LEAFY Dashboard</title>
     
-    <!-- 1. Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- 2. NEW: Configure Tailwind for Dark Mode -->
     <script>
         tailwind.config = {
             darkMode: 'class'
         }
     </script>
     
-    <!-- 3. NEW: Dark Mode Initializer (Prevents FOUC) -->
-    <!-- This script runs before the page renders to apply the theme -->
     <script>
         if (localStorage.theme === 'dark') {
             document.documentElement.classList.add('dark');
@@ -26,383 +21,129 @@
         }
     </script>
     
-    <!-- 4. Load Chartist.js (for charts) and its CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
     <script src="https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
     
-    <!-- FIXED: Add Chartist Axis Title Plugin and its CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chartist-plugin-axistitle@latest/dist/chartist-plugin-axistitle.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chartist-plugin-axistitle@latest/dist/chartist-plugin-axistitle.min.js"></script>
     
-    <!-- 5. Load Icons (from Material Icons) -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
-    <!-- 6. Load Poppins Font -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- 7. Custom Styles -->
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-            /* 10. Subtle Background Pattern (Light) */
             background: linear-gradient(135deg, #f5f7fa 0%, #e5e7eb 100%);
             background-attachment: fixed;
             transition: background-color 0.3s;
         }
-        /* NEW: Dark mode background */
         .dark body {
             background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
             background-attachment: fixed;
         }
 
-        /* Custom styles for Chartist charts */
-        .ct-label {
-            color: #6b7280; /* gray-500 */
-            font-size: 11px;
-            font-weight: 500;
-        }
+        /* Chart Styles */
+        .ct-label { color: #6b7280; font-size: 11px; font-weight: 500; }
+        @media (min-width: 768px) { .ct-label { font-size: 13px; } }
+        .ct-grid { stroke: #e5e7eb; stroke-dasharray: 2px; }
+        .dark .ct-label { color: #9ca3af; }
+        .dark .ct-grid { stroke: #374151; }
 
-        /* Make labels bigger on larger screens */
-        @media (min-width: 768px) {
-            .ct-label {
-                font-size: 13px;
-            }
-        }
-        .ct-grid {
-            stroke: #e5e7eb; /* gray-200 */
-            stroke-dasharray: 2px;
-        }
-        /* NEW: Dark mode chart styles */
-        .dark .ct-label {
-            color: #9ca3af; /* gray-400 */
-        }
-        .dark .ct-grid {
-            stroke: #374151; /* gray-700 */
-        }
+        .ct-axis-title { font-size: 10px; fill: #6b7280; font-weight: 600; }
+        @media (min-width: 768px) { .ct-axis-title { font-size: 12px; } }
+        .dark .ct-axis-title { fill: #9ca3af; }
 
-        /* Axis title styling */
-        .ct-axis-title {
-            font-size: 10px;
-            fill: #6b7280;
-            font-weight: 600;
-        }
-
-        /* Bigger on desktop */
-        @media (min-width: 768px) {
-            .ct-axis-title {
-                font-size: 12px;
-            }
-        }
+        .ct-line { stroke-width: 3px; }
+        .ct-point { stroke-width: 5px; stroke-linecap: round; }
+        .ct-area { fill-opacity: 0.1; }
         
-        .dark .ct-axis-title {
-            fill: #9ca3af;
-        }
-
-        .ct-line {
-            stroke-width: 3px;
-        }
-        .ct-point {
-            stroke-width: 5px;
-            stroke-linecap: round;
-        }
-        .ct-area {
-            fill-opacity: 0.1;
-        }
+        /* pH Chart (Green Theme) */
+        .chart-ph .ct-line, .chart-ph .ct-point { stroke: #10b981; }
+        .chart-ph .ct-area { fill: #10b981; }
         
-        /* pH Chart (Green Theme) - No change needed */
-        .chart-ph .ct-line,
-        .chart-ph .ct-point {
-            stroke: #10b981; /* emerald-500 */
-        }
-        .chart-ph .ct-area {
-            fill: #10b981; /* emerald-500 */
-        }
-        
-        /* TDS Chart (Green Theme) - No change needed */
-        .chart-tds .ct-line,
-        .chart-tds .ct-point {
-            stroke: #059669; /* emerald-600 */
-        }
-        .chart-tds .ct-area {
-            fill: #059669; /* emerald-600 */
-        }
+        /* TDS Chart (Teal Theme) */
+        .chart-tds .ct-line, .chart-tds .ct-point { stroke: #059669; }
+        .chart-tds .ct-area { fill: #059669; }
 
-        /* 8. Premium Loading Spinner */
+        /* NEW: Temperature Chart (Orange Theme) */
+        .chart-temp .ct-line, .chart-temp .ct-point { stroke: #f97316; /* orange-500 */ }
+        .chart-temp .ct-area { fill: #f97316; }
+
+        /* Loading Spinner */
         .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #e5e7eb; /* gray-200 */
-            border-top: 4px solid #10b981; /* emerald-500 */
+            width: 40px; height: 40px;
+            border: 4px solid #e5e7eb; border-top: 4px solid #10b981;
             border-radius: 50%;
             animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
         }
-        /* NEW: Dark mode spinner */
-        .dark .spinner {
-            border: 4px solid #374151; /* gray-700 */
-            border-top: 4px solid #10b981; /* emerald-500 */
-        }
+        .dark .spinner { border: 4px solid #374151; border-top: 4px solid #10b981; }
         
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         
-        /* --- UPDATED ANIMATIONS --- */
-        @keyframes fadeOut {
-            from { opacity: 1; transform: scale(1); }
-            to { opacity: 0; transform: scale(1.1); }
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
+        /* Animations */
+        @keyframes fadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(1.1); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes countUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        
         @keyframes logoMorph {
-            0% { 
-                transform: scale(0.5) rotate(45deg);
-                opacity: 0;
-                filter: blur(10px);
-            }
-            100% { 
-                transform: scale(1) rotate(0deg);
-                opacity: 1;
-                filter: blur(0px);
-            }
+            0% { transform: scale(0.5) rotate(45deg); opacity: 0; filter: blur(10px); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; filter: blur(0px); }
         }
-        
         @keyframes letterFadeIn {
-            from { 
-                opacity: 0;
-                transform: translateY(30px) scale(0.8);
-            }
-            to { 
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
+            from { opacity: 0; transform: translateY(30px) scale(0.8); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
-
         @keyframes breathe {
             0%, 100% { transform: scale(1); opacity: 1; }
             50% { transform: scale(1.03); opacity: 0.9; }
         }
 
-        #splash-icon {
-            animation: logoMorph 2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
-                         breathe 3s ease-in-out 2s infinite;
-        }
-
-        .letter {
-            display: inline-block;
-            opacity: 0;
-            animation: letterFadeIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-            font-weight: 800; /* Make it extra bold */
-        }
-        #splash-screen.fade-out {
-            animation: fadeOut 0.6s ease-out forwards;
-        }
-        /* --- END UPDATED ANIMATIONS --- */
-
-        #app-content {
-            opacity: 0;
-            visibility: hidden;
-            animation: none;
-        }
-        #app-content.fade-in {
-            opacity: 1;
-            visibility: visible;
-            animation: fadeIn 0.5s ease-in forwards;
-        }
+        #splash-icon { animation: logoMorph 2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards, breathe 3s ease-in-out 2s infinite; }
+        .letter { display: inline-block; opacity: 0; animation: letterFadeIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; font-weight: 800; }
+        #splash-screen.fade-out { animation: fadeOut 0.6s ease-out forwards; }
         
-        /* 6. Enhanced Loading Overlay */
+        #app-content { opacity: 0; visibility: hidden; }
+        #app-content.fade-in { opacity: 1; visibility: visible; animation: fadeIn 0.5s ease-in forwards; }
+        
         .loading-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(4px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-            border-radius: 0.75rem; /* rounded-xl to match cards */
-            transition: opacity 0.3s, background 0.3s;
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(4px);
+            display: flex; justify-content: center; align-items: center; z-index: 10;
+            border-radius: 0.75rem; transition: opacity 0.3s, background 0.3s;
         }
-        /* NEW: Dark mode overlay */
-        .dark .loading-overlay {
-            background: rgba(31, 41, 55, 0.95); /* gray-800 */
-        }
+        .dark .loading-overlay { background: rgba(31, 41, 55, 0.95); }
         
-        /* Sidebar transition */
-        #sidebar {
-            transition: transform 0.3s ease-in-out;
-        }
+        #sidebar { transition: transform 0.3s ease-in-out; }
+        #notification-sidebar { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        .stat-card { animation: slideUp 0.6s ease-out forwards; animation-delay: calc(var(--delay) * 0.1s); opacity: 0; }
+        .stat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15); }
+        .dark .stat-card:hover { box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3); }
         
-        /* NEW: Notification Sidebar transition */
-        #notification-sidebar {
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        .bg-white { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        #refresh-button.refreshing { animation: rotate 1s linear; }
+        #refresh-button:hover { background-color: #f3f4f6; transform: scale(1.1); }
+        .dark #refresh-button:hover { background-color: #374151; }
+        
+        .stat-value { animation: countUp 0.5s ease-out; }
+        
+        .ct-chart { animation: fadeIn 0.8s ease-out 0.3s both; }
 
-        /* REMOVED: Notification Overlay transition styles */
-
-
-        /* --- 1. NEW MICRO-ANIMATIONS --- */
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.8; }
-        }
-
-        @keyframes slideUp {
-            from { 
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to { 
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes shimmer {
-            0% { background-position: -1000px 0; }
-            100% { background-position: 1000px 0; }
-        }
-
-        /* Stat cards entrance animation */
-        .stat-card {
-            animation: slideUp 0.6s ease-out forwards;
-            animation-delay: calc(var(--delay) * 0.1s);
-            opacity: 0;
-        }
-
-        /* Hover effects for cards */
-        .stat-card:hover {
-            transform: translateY(-4px);
-            /* NEW: Dark mode shadow */
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
-        }
-        .dark .stat-card:hover {
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
-        }
-
-
-        /* Smooth transitions for all cards */
-        .bg-white {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* 7. Animated Refresh Button */
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        #refresh-button.refreshing {
-            animation: rotate 1s linear;
-        }
-
-        #refresh-button {
-            transition: all 0.3s ease;
-        }
-
-        #refresh-button:hover {
-            background-color: #f3f4f6; /* gray-50 */
-            transform: scale(1.1);
-        }
-        /* NEW: Dark mode refresh hover */
-        .dark #refresh-button:hover {
-            background-color: #374151; /* gray-700 */
-        }
-
-
-        /* 3. Add Number Counter Animation */
-        @keyframes countUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .stat-value {
-            animation: countUp 0.5s ease-out;
-        }
-
-        /* 4. Add Ripple Effect to Buttons */
-        @keyframes ripple {
-            to {
-                transform: scale(4);
-                opacity: 0;
-            }
-        }
-
-        .ripple {
-            position: relative;
-            overflow: hidden;
-        }
-
-        .ripple::after {
-            content: "";
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 10px;
-            height: 10px;
-            background: rgba(255, 255, 255, 0.5);
-            border-radius: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            pointer-events: none;
-        }
-        /* Dark mode ripple on gray buttons */
-        .dark .ripple.dark\:from-gray-600::after {
-             background: rgba(0, 0, 0, 0.3);
-        }
-
-
-        .ripple:active::after {
-            animation: ripple 0.6s ease-out;
-        }
-
-        /* 7. Add Glow Effect to Active Elements */
-        .glow-emerald {
-            box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
-        }
-
-        /* Apply glow to pump buttons when ON */
-        .pump-on {
-            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
-        }
-
-        /* 9. Optional: Add Chart Animation on Load */
-        .ct-chart {
-            animation: fadeIn 0.8s ease-out 0.3s both;
-        }
-
-        /* REMOVED the X-axis label rotation styles */
-
-        /* --- NEW: Modal Styles --- */
-        .modal-overlay {
-            transition: opacity 0.3s ease;
-        }
-        .modal-card {
-            transition: all 0.3s ease;
-            transform: translateY(-20px) scale(0.95);
-            opacity: 0;
-        }
-        .modal-overlay.open .modal-card {
-            transform: translateY(0) scale(1);
-            opacity: 1;
-        }
-        /* --- End Modal Styles --- */
+        /* Modal Styles */
+        .modal-overlay { transition: opacity 0.3s ease; }
+        .modal-card { transition: all 0.3s ease; transform: translateY(-20px) scale(0.95); opacity: 0; }
+        .modal-overlay.open .modal-card { transform: translateY(0) scale(1); opacity: 1; }
     </style>
 </head>
-<!-- 1. Body now transitions background color -->
 <body class="transition-colors duration-300">
 
-    <!-- UPDATED Splash Screen (No theme change needed, it's dark by default) -->
     <div id="splash-screen" class="fixed inset-0 bg-gradient-to-br from-emerald-900 via-emerald-800 to-emerald-700 flex flex-col items-center justify-center z-50">
         <div class="flex flex-col items-center text-white">
-            <!-- Logo on top with enhanced animation -->
             <img src="logo w.png" id="splash-icon" class="w-96 h-96 mb-10" alt="Leafy Logo" onerror="this.src='https://placehold.co/384x384/104332/FFFFFF?text=Leafy+Logo&font=inter'; this.onerror=null;">
-            <!-- LEAFY text in all capitals with staggered fade-in -->
             <div class="flex space-x-1">
                 <span class="text-7xl font-bold letter" style="animation-delay: 0.1s">L</span>
                 <span class="text-7xl font-bold letter" style="animation-delay: 0.2s">E</span>
@@ -413,28 +154,14 @@
         </div>
     </div>
 
-    <!-- The z-index values are important:
-         - Splash: 50
-         - Modals: 50 (Confirm) / 40 (Analytics)
-         - Left Sidebar: 30
-         - Left Overlay: 20
-         - Header: 20
-         - Notification Sidebar: 30
-         - Notification Overlay: 20
-    -->
     <div id="app-content" class="flex h-screen">
-        <!-- NEW: Mobile Sidebar Overlay -->
         <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-20 md:hidden hidden"></div>
         
-        <!-- 6. Premium Sidebar Gradient (No theme change needed, it's dark by default) -->
         <aside id="sidebar" class="w-64 bg-gradient-to-b from-emerald-900 via-emerald-800 to-emerald-900 text-white flex-col fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 z-30 shadow-2xl">
-            <!-- Logo -->
             <div class="flex items-center justify-center h-24 border-b border-emerald-700/50">
                 <img src="logo w.png" class="w-16 h-16 mr-3" alt="Leafy Logo" onerror="this.src='https://placehold.co/64x64/104332/FFFFFF?text=L&font=inter'; this.onerror=null;">
                 <span class="text-3xl font-bold">LEAFY</span>
             </div>
-            
-            <!-- 5. Smooth Sidebar Animation -->
             <nav class="flex-1 mt-6">
                 <a href="#" class="flex items-center px-6 py-3 bg-emerald-700/70 text-white transition-all duration-300 rounded-r-full mr-4">
                     <span class="material-icons mr-3">dashboard</span>
@@ -444,62 +171,41 @@
                     <span class="material-icons mr-3">settings</span>
                     <span>Settings</span>
                 </a>
-                <a href="#" class="flex items-center px-6 py-3 text-emerald-100 hover:bg-emerald-700/50 transition-all duration-300 hover:translate-x-2 rounded-r-full mr-4">
-                    <span class="material-icons mr-3">logout</span>
-                    <span>Logout</span>
-                </a>
             </nav>
         </aside>
 
-        <!-- Main Content -->
         <div class="flex-1 flex flex-col overflow-hidden">
-            <!-- 3. Glass Morphism Header (Dark mode updated) -->
-            <!-- CHANGE 10: Make Header More Compact on Mobile -->
             <header class="bg-white/80 backdrop-blur-md shadow-lg z-20 border-b border-gray-200/50 dark:bg-gray-800/80 dark:border-gray-700/50 transition-colors duration-300">
                 <div class="container mx-auto px-4 md:px-6 py-3 md:py-4 flex justify-between items-center">
-                    <!-- Mobile Menu Toggle -->
                     <button id="menu-toggle" class="md:hidden text-gray-600 dark:text-gray-300">
                         <span class="material-icons text-3xl">menu</span>
                     </button>
                     <h1 class="text-2xl font-semibold text-gray-700 hidden md:block dark:text-gray-200">Dashboard</h1>
                     <div class="flex items-center space-x-4">
-                        <!-- NEW: Theme Toggle Button -->
-                        <button id="theme-toggle" class="p-2 rounded-full text-gray-500 dark:text-gray-400 focus:outline-none transition-colors duration-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                        <button id="theme-toggle" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                             <span id="theme-icon-light" class="material-icons dark:hidden">light_mode</span>
                             <span id="theme-icon-dark" class="material-icons hidden dark:inline">dark_mode</span>
                         </button>
-                        
-                        <button id="refresh-button" class="p-2 rounded-full text-gray-500 dark:text-gray-400 focus:outline-none">
+                        <button id="refresh-button" class="p-2 rounded-full text-gray-500 dark:text-gray-400">
                             <span class="material-icons">refresh</span>
                         </button>
-
-                        <!-- NEW: Download CSV Button -->
-                        <button id="download-csv-button" class="p-2 rounded-full text-gray-500 dark:text-gray-400 focus:outline-none transition-colors duration-300 hover:bg-gray-100 dark:hover:bg-gray-700" title="Download All Data (CSV)">
+                        <button id="download-csv-button" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700" title="Download CSV">
                             <span class="material-icons">file_download</span>
                         </button>
-
-                        <!-- NEW: Notification Bell Button -->
-                        <button id="notification-button" class="p-2 rounded-full text-gray-500 dark:text-gray-400 focus:outline-none transition-colors duration-300 hover:bg-gray-100 dark:hover:bg-gray-700 relative" title="Notifications">
+                        <button id="notification-button" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 relative">
                             <span class="material-icons">notifications</span>
                             <span id="notification-badge" class="absolute top-1 right-1 flex h-3 w-3 -mt-px -mr-px hidden">
                                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                                 <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
                             </span>
                         </button>
-
                     </div>
                 </div>
             </header>
             
-            <!-- 2. Main Content Area -->
-            <!-- CHANGE 4: Optimize Main Content Padding -->
-            <!-- FIXED: Changed overflow-y-auto to overflow-y-scroll to prevent layout jiggle -->
             <main class="flex-1 overflow-x-hidden overflow-y-scroll p-4 md:p-6">
-                <!-- 4. Premium Stats Cards (Dark mode updated) -->
-                <!-- CHANGE 3: Improve Stats Card Layout on Mobile -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6">
                     
-                    <!-- Latest TDS Card -->
                     <div class="stat-card bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl flex items-center space-x-4 border border-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:shadow-gray-900/50" style="--delay: 1">
                         <div class="p-3 bg-gradient-to-br from-emerald-100 to-emerald-200 text-emerald-600 rounded-xl shadow-inner dark:from-emerald-800/50 dark:to-emerald-900/50 dark:text-emerald-300">
                             <span class="material-icons text-3xl">science</span>
@@ -513,7 +219,6 @@
                         </div>
                     </div>
                     
-                    <!-- Latest pH Card -->
                     <div class="stat-card bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl flex items-center space-x-4 border border-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:shadow-gray-900/50" style="--delay: 2">
                         <div class="p-3 bg-gradient-to-br from-emerald-100 to-emerald-200 text-emerald-600 rounded-xl shadow-inner dark:from-emerald-800/50 dark:to-emerald-900/50 dark:text-emerald-300">
                             <span class="material-icons text-3xl">opacity</span>
@@ -524,8 +229,20 @@
                         </div>
                     </div>
 
-                    <!-- Last Update Card -->
                     <div class="stat-card bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl flex items-center space-x-4 border border-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:shadow-gray-900/50" style="--delay: 3">
+                        <div class="p-3 bg-gradient-to-br from-orange-100 to-orange-200 text-orange-600 rounded-xl shadow-inner dark:from-orange-900/50 dark:to-orange-800/50 dark:text-orange-300">
+                            <span class="material-icons text-3xl">thermostat</span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Temperature</p>
+                            <div class="flex items-baseline space-x-2">
+                                <h2 id="latest-temp" class="text-4xl font-bold text-gray-900 stat-value dark:text-white">--</h2>
+                                <span class="text-lg text-gray-500 dark:text-gray-400">°C</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl flex items-center space-x-4 border border-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:shadow-gray-900/50" style="--delay: 4">
                         <div class="p-3 bg-gradient-to-br from-gray-100 to-gray-200 text-gray-600 rounded-xl shadow-inner dark:from-gray-700 dark:to-gray-800 dark:text-gray-300">
                             <span class="material-icons text-3xl">update</span>
                         </div>
@@ -539,128 +256,98 @@
                             </div>
                             <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Last Update</p>
                             <h2 id="last-update-time" class="text-3xl font-bold text-gray-900 stat-value dark:text-white">--:--</h2>
-                            <p id="last-update-date" class="text-sm text-gray-400 dark:text-gray-500">Waiting for readings...</p>
+                            <p id="last-update-date" class="text-sm text-gray-400 dark:text-gray-500">Waiting...</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- 5. Enhanced Chart Cards (Dark mode updated) -->
-                <!-- CHANGE 2: Make Chart Cards Stack Better on Mobile -->
                 <div class="grid grid-cols-1 gap-4 md:gap-6 mb-6">
                     
-                    <!-- pH Trend Chart -->
-                    <!-- CHANGE 8: Make Chart Card Padding Responsive -->
                     <div class="bg-white p-4 md:p-6 rounded-xl shadow-lg hover:shadow-2xl relative border border-gray-100 transition-all duration-300 dark:bg-gray-800 dark:border-gray-700 dark:shadow-gray-900/50">
                         <div id="loading-ph" class="loading-overlay"><div class="spinner"></div></div>
                         <h3 class="text-xl font-semibold text-gray-800 mb-1 dark:text-gray-100">pH Trend</h3>
                         <p class="text-sm text-gray-500 mb-4 dark:text-gray-400">Recent acidity readings</p>
-                        <!-- CHANGE 1: Update Chart Height for Responsive Design -->
                         <div id="chart-ph" class="ct-chart ct-major-tenth chart-ph h-48 md:h-64 lg:h-80"></div>
                     </div>
                     
-                    <!-- TDS Trend Chart -->
-                    <!-- CHANGE 8: Make Chart Card Padding Responsive -->
                     <div class="bg-white p-4 md:p-6 rounded-xl shadow-lg hover:shadow-2xl relative border border-gray-100 transition-all duration-300 dark:bg-gray-800 dark:border-gray-700 dark:shadow-gray-900/50">
                         <div id="loading-tds" class="loading-overlay"><div class="spinner"></div></div>
                         <h3 class="text-xl font-semibold text-gray-800 mb-1 dark:text-gray-100">TDS Trend (ppm)</h3>
                         <p class="text-sm text-gray-500 mb-4 dark:text-gray-400">Recent total dissolved solids</p>
-                        <!-- CHANGE 1: Update Chart Height for Responsive Design -->
                         <div id="chart-tds" class="ct-chart ct-major-tenth chart-tds h-48 md:h-64 lg:h-80"></div>
+                    </div>
+
+                    <div class="bg-white p-4 md:p-6 rounded-xl shadow-lg hover:shadow-2xl relative border border-gray-100 transition-all duration-300 dark:bg-gray-800 dark:border-gray-700 dark:shadow-gray-900/50">
+                        <div id="loading-temp" class="loading-overlay"><div class="spinner"></div></div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-1 dark:text-gray-100">Temperature Trend (°C)</h3>
+                        <p class="text-sm text-gray-500 mb-4 dark:text-gray-400">Water temperature history</p>
+                        <div id="chart-temp" class="ct-chart ct-major-tenth chart-temp h-48 md:h-64 lg:h-80"></div>
                     </div>
                 </div>
                 
-                <!-- 9. System Controls Section Enhancement (Dark mode updated) -->
-                <!-- CHANGE 9: Optimize System Controls Card for Mobile -->
-                <!-- UPDATED: This card is now for Analytics, not Controls -->
                 <div class="bg-white p-4 md:p-6 rounded-xl shadow-lg hover:shadow-2xl border border-gray-100 transition-all duration-300 dark:bg-gray-800 dark:border-gray-700 dark:shadow-gray-900/50">
                     <div class="flex items-start space-x-4 mb-6">
                         <div class="p-3 bg-gradient-to-br from-emerald-100 to-emerald-200 text-emerald-600 rounded-xl shadow-inner dark:from-emerald-800/50 dark:to-emerald-900/50 dark:text-emerald-300">
-                            <!-- NEW ICON -->
                             <span class="material-icons text-3xl">analytics</span>
                         </div>
                         <div>
-                            <!-- NEW TITLE -->
-                            <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100">Pump Analytics</h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Summary of automatic dosing events</p>
+                            <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100">System Analytics</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Summary of events (Note: Pump 1 data replaced by Temp)</p>
                         </div>
                     </div>
                     
-                    <!-- REPLACED: pump-controls is now pump-analytics-grid -->
                     <div id="pump-analytics-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-                        <!-- Analytics cards will be generated by JS -->
                         <p class="text-sm text-gray-500 dark:text-gray-400 col-span-full">Loading analytics...</p>
                     </div>
-                    <!-- Kept error message in case analytics calculation fails -->
                     <p id="error-message" class="text-red-500 dark:text-red-400 text-sm mt-4 h-5"></p>
                 </div>
             </main>
         </div>
 
-        <!-- NEW: Notification Sidebar -->
-        <!-- UPDATED: Removed opacity-0, added bg-black/50 for instant overlay -->
         <div id="notification-overlay" class="fixed inset-0 z-20 hidden pointer-events-none bg-black/50"></div>
         <aside id="notification-sidebar" class="w-80 bg-white dark:bg-gray-900 text-gray-900 dark:text-white flex flex-col fixed inset-y-0 right-0 transform translate-x-full z-30 shadow-2xl border-l dark:border-gray-700">
-            <!-- Header -->
             <div class="flex items-center justify-between p-4 border-b dark:border-gray-700">
                 <h3 id="notification-title" class="text-lg font-semibold">Notifications</h3>
                 <button id="notification-close-btn" class="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">
                     <span class="material-icons">close</span>
                 </button>
             </div>
-            <!-- Notification List -->
             <div id="notification-list" class="flex-1 overflow-y-auto p-4 space-y-3">
-                <!-- Notifications will be injected by JS -->
                 <p id="notification-placeholder" class="text-sm text-gray-500 dark:text-gray-400 text-center mt-4">No new notifications.</p>
             </div>
         </aside>
-
     </div>
 
-    <!-- NEW: Analytics Details Modal -->
     <div id="analytics-modal-overlay" class="modal-overlay fixed inset-0 bg-black/60 backdrop-blur-sm z-40 flex items-center justify-center p-4 hidden">
         <div id="analytics-modal" class="modal-card bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full relative">
-            <!-- Modal Header -->
             <div class="flex items-center justify-between p-4 border-b dark:border-gray-700">
-                <h3 id="modal-title" class="text-lg font-semibold text-gray-900 dark:text-white">Dose Log</h3>
+                <h3 id="modal-title" class="text-lg font-semibold text-gray-900 dark:text-white">Details</h3>
                 <button id="modal-close-btn" class="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">
                     <span class="material-icons">close</span>
                 </button>
             </div>
-            <!-- Modal Content -->
-            <div id="modal-content" class="p-6 max-h-80 overflow-y-auto">
-                <!-- Content will be injected by JS -->
-            </div>
+            <div id="modal-content" class="p-6 max-h-80 overflow-y-auto"></div>
         </div>
     </div>
 
-    <!-- NEW: Download Confirmation Modal -->
     <div id="confirm-modal-overlay" class="modal-overlay fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div id="confirm-modal" class="modal-card bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-sm w-full relative">
-            <!-- Modal Header -->
             <div class="flex items-center justify-between p-4 border-b dark:border-gray-700">
                 <h3 id="confirm-modal-title" class="text-lg font-semibold text-gray-900 dark:text-white">Confirm Download</h3>
                 <button id="confirm-modal-close-btn" class="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">
                     <span class="material-icons">close</span>
                 </button>
             </div>
-            <!-- Modal Content -->
             <div class="p-6">
                 <p class="text-sm text-gray-700 dark:text-gray-300">Do you want to download the complete channel data as a CSV file?</p>
             </div>
-            <!-- Modal Footer -->
             <div class="flex justify-end space-x-3 p-4 bg-gray-50 dark:bg-gray-800/50 border-t dark:border-gray-700 rounded-b-xl">
-                <button id="confirm-modal-cancel-btn" class="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600">
-                    Cancel
-                </button>
-                <button id="confirm-modal-download-btn" class="px-4 py-2 rounded-lg text-sm font-medium bg-emerald-600 text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
-                    Yes, Download
-                </button>
+                <button id="confirm-modal-cancel-btn" class="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600">Cancel</button>
+                <button id="confirm-modal-download-btn" class="px-4 py-2 rounded-lg text-sm font-medium bg-emerald-600 text-white hover:bg-emerald-700">Yes, Download</button>
             </div>
         </div>
     </div>
 
-
-    <!-- 6. Main JavaScript Logic -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
 
@@ -677,18 +364,18 @@
             
             // --- 2. GLOBAL STATE ---
             let pumpStates = { 1: false, 2: false, 3: false, 4: false };
-            let lastPumpStates = { 1: false, 2: false, 3: false, 4: false }; // NEW: For notification diff
+            let lastPumpStates = { 1: false, 2: false, 3: false, 4: false };
             let phChartInstance;
             let tdsChartInstance;
-            let currentFeeds = []; // Added for resize handler
-            let currentAnalytics = {}; // NEW: To store full analytics data
-            let lastFocusedElement = null; // Store the element that opened the modal
-            let notifications = []; // NEW: Store notifications
-            let unreadNotifications = 0; // NEW: Count of unread notifications
+            let tempChartInstance; // NEW
+            let currentFeeds = [];
+            let currentAnalytics = {};
+            let lastFocusedElement = null;
+            let notifications = [];
+            let unreadNotifications = 0;
 
-            // NEW: Make pump names globally accessible for modal
             const pumpNames = {
-                1: "Pump 1 (pH Up)",
+                1: "Pump 1 (Replaced by Temp)",
                 2: "Pump 2 (pH Down)",
                 3: "Pump 3 (Nutrient)",
                 4: "Pump 4 (Nutrient)"
@@ -698,29 +385,28 @@
             const ui = {
                 tds: document.getElementById('latest-tds'),
                 ph: document.getElementById('latest-ph'),
+                temp: document.getElementById('latest-temp'), // NEW
                 updateTime: document.getElementById('last-update-time'),
                 updateDate: document.getElementById('last-update-date'),
                 errorMessage: document.getElementById('error-message'),
                 refreshButton: document.getElementById('refresh-button'),
                 loadingPh: document.getElementById('loading-ph'),
                 loadingTds: document.getElementById('loading-tds'),
+                loadingTemp: document.getElementById('loading-temp'), // NEW
                 sidebar: document.getElementById('sidebar'),
                 menuToggle: document.getElementById('menu-toggle'),
                 themeToggle: document.getElementById('theme-toggle'),
                 sidebarOverlay: document.getElementById('sidebar-overlay'), 
                 downloadCsvButton: document.getElementById('download-csv-button'), 
                 pumpAnalyticsGrid: document.getElementById('pump-analytics-grid'), 
-                // Analytics Modal UI
                 modalOverlay: document.getElementById('analytics-modal-overlay'),
                 modalTitle: document.getElementById('modal-title'),
                 modalContent: document.getElementById('modal-content'),
                 modalCloseBtn: document.getElementById('modal-close-btn'),
-                // Confirmation Modal UI
                 confirmModalOverlay: document.getElementById('confirm-modal-overlay'),
                 confirmModalCloseBtn: document.getElementById('confirm-modal-close-btn'),
                 confirmModalCancelBtn: document.getElementById('confirm-modal-cancel-btn'),
                 confirmModalDownloadBtn: document.getElementById('confirm-modal-download-btn'),
-                // NEW: Notification UI
                 notificationButton: document.getElementById('notification-button'),
                 notificationBadge: document.getElementById('notification-badge'),
                 notificationSidebar: document.getElementById('notification-sidebar'),
@@ -730,108 +416,56 @@
                 notificationPlaceholder: document.getElementById('notification-placeholder'),
             };
 
-            // --- 4. THINGSPEAK API FUNCTIONS ---
-            
+            // --- 4. THINGSPEAK API ---
             async function fetchRecentReadings() {
                 const { channelId, readApiKey } = iotConfig;
                 const url = `https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${readApiKey}&results=${MAX_POINTS}`;
                 const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch ThingSpeak feeds (${response.status})`);
-                }
+                if (!response.ok) throw new Error(`Failed to fetch ThingSpeak feeds (${response.status})`);
                 const payload = await response.json();
-                return {
-                    channel: payload.channel,
-                    feeds: payload.feeds ?? [],
-                };
+                return { channel: payload.channel, feeds: payload.feeds ?? [] };
             }
 
             // --- 5. HELPER FUNCTIONS ---
-            
             function normalizeNumber(value) {
                 const parsed = parseFloat(value);
                 return Number.isFinite(parsed) ? parsed : null;
             }
 
-            // UPDATED: Renamed from getPumpStates, used by notifications
             function getPumpStatesFromFeed(feed = {}) {
                 return {
-                    1: feed.field3 === "1",
+                    1: feed.field3 === "1", // This will likely be false now since field3 is float temperature
                     2: feed.field4 === "1",
                     3: feed.field5 === "1",
                     4: feed.field6 === "1",
                 };
             }
 
-            function getChartLabels(feeds) {
-                return feeds.map(feed => {
-                    const createdAt = feed.created_at ? new Date(feed.created_at) : null;
-                    return createdAt ? createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : "";
-                });
-            }
- 
             function getResponsiveChartLabels(feeds) {
                 const isMobile = window.innerWidth < 768;
                 const feedCount = feeds.length;
-                
                 return feeds.map((feed, index) => {
                     const createdAt = feed.created_at ? new Date(feed.created_at) : null;
                     if (!createdAt) return "";
-                    
-                    let skipInterval;
-                    if (isMobile) {
-                        if (feedCount > 30) skipInterval = 6;
-                        else if (feedCount > 20) skipInterval = 4;
-                        else skipInterval = 3;
-                    } else {
-                        if (feedCount > 30) skipInterval = 3;
-                        else skipInterval = 2;
-                    }
-                    
+                    let skipInterval = isMobile ? (feedCount > 30 ? 6 : 3) : (feedCount > 30 ? 3 : 2);
                     if (index === 0 || index === feedCount - 1 || index % skipInterval === 0) {
                         return createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
                     }
-                    
                     return "";
                 });
             }
 
             // --- 6. CHART BUILDER FUNCTIONS ---
-            
             const chartBaseOptions = {
-                fullWidth: true,
-                showArea: true,
+                fullWidth: true, showArea: true,
                 lineSmooth: Chartist.Interpolation.cardinal({ tension: 0.2 }),
-                axisX: { 
-                    showGrid: true, 
-                    showLabel: true
-                },
-                axisY: { 
-                    onlyInteger: false, 
-                    offset: 60, 
-                    showGrid: true,
-                    showLabel: true
-                },
-                chartPadding: { 
-                    top: 20,
-                    right: window.innerWidth < 768 ? 15 : 30,
-                    bottom: window.innerWidth < 768 ? 35 : 30,
-                    left: window.innerWidth < 768 ? 10 : 20
-                },
+                axisX: { showGrid: true, showLabel: true },
+                axisY: { onlyInteger: false, offset: 60, showGrid: true, showLabel: true },
+                chartPadding: { top: 20, right: window.innerWidth < 768 ? 15 : 30, bottom: window.innerWidth < 768 ? 35 : 30, left: window.innerWidth < 768 ? 10 : 20 },
                 plugins: [
                     Chartist.plugins.ctAxisTitle({
-                        axisX: {
-                            axisTitle: 'Time',
-                            axisClass: 'ct-axis-title',
-                            offset: { x: 0, y: 50 },
-                            textAnchor: 'middle'
-                        },
-                        axisY: {
-                            axisTitle: '',
-                            axisClass: 'ct-axis-title',
-                            offset: { x: 0, y: 0 },
-                            flipTitle: true
-                        }
+                        axisX: { axisTitle: 'Time', axisClass: 'ct-axis-title', offset: { x: 0, y: 50 }, textAnchor: 'middle' },
+                        axisY: { axisTitle: '', axisClass: 'ct-axis-title', offset: { x: 0, y: 0 }, flipTitle: true }
                     })
                 ]
             };
@@ -839,94 +473,53 @@
             function buildTdsChartData(feeds) {
                 const labels = getResponsiveChartLabels(feeds);
                 const tdsSeries = feeds.map(feed => normalizeNumber(feed.field1));
-                
-                const options = {
-                    ...chartBaseOptions,
-                    low: 0,
-                    axisY: { 
-                        ...chartBaseOptions.axisY, 
-                        labelInterpolationFnc: value => `${Math.round(value)} ppm` 
-                    },
-                    plugins: [
-                        Chartist.plugins.ctAxisTitle({
-                            axisX: {
-                                axisTitle: 'Time',
-                                axisClass: 'ct-axis-title',
-                                offset: { x: 0, y: window.innerWidth < 768 ? 40 : 50 },
-                                textAnchor: 'middle'
-                            },
-                            axisY: {
-                                axisTitle: 'TDS (ppm)',
-                                axisClass: 'ct-axis-title',
-                                offset: { x: 0, y: 15 },
-                                flipTitle: true
-                            }
-                        })
-                    ]
+                const options = { ...chartBaseOptions, low: 0, axisY: { ...chartBaseOptions.axisY, labelInterpolationFnc: value => `${Math.round(value)} ppm` },
+                    plugins: [ Chartist.plugins.ctAxisTitle({ axisX: { axisTitle: 'Time', axisClass: 'ct-axis-title', offset: { x: 0, y: 50 }, textAnchor: 'middle' }, axisY: { axisTitle: 'TDS (ppm)', axisClass: 'ct-axis-title', offset: { x: 0, y: 15 }, flipTitle: true } }) ]
                 };
-
-                return {
-                    data: { labels, series: [tdsSeries] },
-                    options: options,
-                };
+                return { data: { labels, series: [tdsSeries] }, options: options };
             }
 
             function buildPhChartData(feeds) {
                 const labels = getResponsiveChartLabels(feeds);
                 const phSeries = feeds.map(feed => normalizeNumber(feed.field2));
-
-                const options = {
-                    ...chartBaseOptions,
-                    low: 2,
-                    high: 12,
-                    axisY: { 
-                        ...chartBaseOptions.axisY, 
-                        labelInterpolationFnc: value => value.toFixed(1) 
-                    },
-                    plugins: [
-                        Chartist.plugins.ctAxisTitle({
-                            axisX: {
-                                axisTitle: 'Time',
-                                axisClass: 'ct-axis-title',
-                                offset: { x: 0, y: window.innerWidth < 768 ? 40 : 50 },
-                                textAnchor: 'middle'
-                            },
-                            axisY: {
-                                axisTitle: 'pH Level',
-                                axisClass: 'ct-axis-title',
-                                offset: { x: 0, y: 15 },
-                                flipTitle: true
-                            }
-                        })
-                    ]
+                const options = { ...chartBaseOptions, low: 2, high: 12, axisY: { ...chartBaseOptions.axisY, labelInterpolationFnc: value => value.toFixed(1) },
+                    plugins: [ Chartist.plugins.ctAxisTitle({ axisX: { axisTitle: 'Time', axisClass: 'ct-axis-title', offset: { x: 0, y: 50 }, textAnchor: 'middle' }, axisY: { axisTitle: 'pH Level', axisClass: 'ct-axis-title', offset: { x: 0, y: 15 }, flipTitle: true } }) ]
                 };
+                return { data: { labels, series: [phSeries] }, options: options };
+            }
 
-                return {
-                    data: { labels, series: [phSeries] },
-                    options: options,
+            // NEW: Temperature Chart Builder
+            function buildTempChartData(feeds) {
+                const labels = getResponsiveChartLabels(feeds);
+                const tempSeries = feeds.map(feed => normalizeNumber(feed.field3));
+                const options = { ...chartBaseOptions,
+                    axisY: { ...chartBaseOptions.axisY, labelInterpolationFnc: value => `${value.toFixed(1)}°C` },
+                    plugins: [ Chartist.plugins.ctAxisTitle({ axisX: { axisTitle: 'Time', axisClass: 'ct-axis-title', offset: { x: 0, y: 50 }, textAnchor: 'middle' }, axisY: { axisTitle: 'Temp (°C)', axisClass: 'ct-axis-title', offset: { x: 0, y: 15 }, flipTitle: true } }) ]
                 };
+                return { data: { labels, series: [tempSeries] }, options: options };
             }
             
-            // --- 7. UI UPDATE & EVENT HANDLERS ---
-            
+            // --- 7. UI UPDATE ---
             function updateDashboardUI(feeds) {
                 if (!feeds || feeds.length === 0) {
                     ui.loadingPh.style.display = 'none';
                     ui.loadingTds.style.display = 'none';
+                    ui.loadingTemp.style.display = 'none';
                     return;
                 }
                 
                 currentFeeds = feeds; 
-                
                 const latestFeed = feeds[feeds.length - 1];
                 
                 // Update Stats
                 const latestTds = normalizeNumber(latestFeed.field1);
                 const latestPh = normalizeNumber(latestFeed.field2);
+                const latestTemp = normalizeNumber(latestFeed.field3); // Fetch Temperature
                 const lastUpdated = latestFeed.created_at ? new Date(latestFeed.created_at) : null;
 
                 ui.tds.textContent = latestTds !== null ? latestTds.toFixed(0) : "N/A";
                 ui.ph.textContent = latestPh !== null ? latestPh.toFixed(2) : "N/A";
+                ui.temp.textContent = latestTemp !== null ? latestTemp.toFixed(1) : "N/A"; // Display Temp
                 
                 if (lastUpdated) {
                     ui.updateTime.textContent = lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -936,12 +529,11 @@
                     ui.updateDate.textContent = "No data";
                 }
                 
-                // NEW: Check for pump state changes and send notifications
+                // Notifications logic (Pump 1 logic will likely fail/ignore here, which is fine)
                 pumpStates = getPumpStatesFromFeed(latestFeed);
                 checkPumpChangesForNotifications(pumpStates, lastPumpStates);
-                lastPumpStates = { ...pumpStates }; // Update the "last" state
+                lastPumpStates = { ...pumpStates };
 
-                // NEW: Calculate and Render Pump Analytics
                 try {
                     const analytics = calculatePumpAnalytics(feeds);
                     currentAnalytics = analytics; 
@@ -954,79 +546,65 @@
                 // Update Charts
                 const phChartData = buildPhChartData(feeds);
                 const tdsChartData = buildTdsChartData(feeds);
+                const tempChartData = buildTempChartData(feeds); // Build Temp Data
                 
-                if (phChartInstance) {
-                    phChartInstance.update(phChartData.data, phChartData.options);
-                } else {
-                    phChartInstance = new Chartist.Line('#chart-ph', phChartData.data, phChartData.options); 
-                }
+                if (phChartInstance) phChartInstance.update(phChartData.data, phChartData.options);
+                else phChartInstance = new Chartist.Line('#chart-ph', phChartData.data, phChartData.options); 
                 
-                if (tdsChartInstance) {
-                    tdsChartInstance.update(tdsChartData.data, tdsChartData.options);
-                } else {
-                    tdsChartInstance = new Chartist.Line('#chart-tds', tdsChartData.data, tdsChartData.options); 
-                }
+                if (tdsChartInstance) tdsChartInstance.update(tdsChartData.data, tdsChartData.options);
+                else tdsChartInstance = new Chartist.Line('#chart-tds', tdsChartData.data, tdsChartData.options); 
+                
+                // Render Temp Chart
+                if (tempChartInstance) tempChartInstance.update(tempChartData.data, tempChartData.options);
+                else tempChartInstance = new Chartist.Line('#chart-temp', tempChartData.data, tempChartData.options); 
                 
                 ui.loadingPh.style.display = 'none';
                 ui.loadingTds.style.display = 'none';
+                ui.loadingTemp.style.display = 'none';
             }
 
             function calculatePumpAnalytics(feeds) {
-                let analytics = {
-                    1: { dosesList: [] }, // Pump 1 (field3)
-                    2: { dosesList: [] }, // Pump 2 (field4)
-                    3: { dosesList: [] }, // Pump 3 (field5)
-                    4: { dosesList: [] }  // Pump 4 (field6)
-                };
-
+                let analytics = { 1: { dosesList: [] }, 2: { dosesList: [] }, 3: { dosesList: [] }, 4: { dosesList: [] } };
                 for (const feed of feeds) {
+                    // Field 3 is now temperature, so this check usually returns false
                     if (feed.field3 === "1") analytics[1].dosesList.push(new Date(feed.created_at));
                     if (feed.field4 === "1") analytics[2].dosesList.push(new Date(feed.created_at));
                     if (feed.field5 === "1") analytics[3].dosesList.push(new Date(feed.created_at));
                     if (feed.field6 === "1") analytics[4].dosesList.push(new Date(feed.created_at));
                 }
-
                 let processedAnalytics = {};
                 for (const num in analytics) {
                     const list = analytics[num].dosesList;
-                    const totalDoses = list.length;
-                    const lastDosed = totalDoses > 0 ? list[totalDoses - 1] : null;
-                    processedAnalytics[num] = {
-                        totalDoses: totalDoses,
-                        lastDosed: lastDosed,
-                        dosesList: list 
-                    };
+                    processedAnalytics[num] = { totalDoses: list.length, lastDosed: list.length > 0 ? list[list.length - 1] : null, dosesList: list };
                 }
                 return processedAnalytics;
             }
 
             function renderPumpAnalytics(analytics) {
                 ui.pumpAnalyticsGrid.innerHTML = ''; 
-                
                 [1, 2, 3, 4].forEach(num => {
                     const data = analytics[num];
-                    const lastDosedTime = data.lastDosed 
-                        ? data.lastDosed.toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true }) 
-                        : 'Never in this period';
+                    const lastDosedTime = data.lastDosed ? data.lastDosed.toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true }) : 'Never in this period';
+                    // Visual fix for Pump 1 which is now Temperature
+                    const displayCount = (num == 1) ? "-" : data.totalDoses;
+                    const displaySub = (num == 1) ? "Data on Field 3 is Temp" : "doses";
                     
                     const cardHTML = `
                         <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg shadow-inner border border-gray-200 dark:border-gray-700 cursor-pointer transition-colors hover:bg-gray-100 dark:hover:bg-gray-600/50" data-pump-id="${num}">
                             <p class="text-sm font-semibold text-emerald-600 dark:text-emerald-400 truncate pointer-events-none">${pumpNames[num]}</p>
                             <p class="text-gray-700 dark:text-gray-200 mt-2 pointer-events-none">
-                                <span class="font-bold text-3xl text-gray-900 dark:text-white pointer-events-none">${data.totalDoses}</span>
-                                <span class="text-sm pointer-events-none">doses</span>
+                                <span class="font-bold text-3xl text-gray-900 dark:text-white pointer-events-none">${displayCount}</span>
+                                <span class="text-sm pointer-events-none">${displaySub}</span>
                             </p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2 truncate pointer-events-none" title="${lastDosedTime}">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2 truncate pointer-events-none">
                                 <span class="material-icons text-xs align-middle mr-1 pointer-events-none">update</span>Last: ${lastDosedTime}
                             </p>
-                        </div>
-                    `;
+                        </div>`;
                     ui.pumpAnalyticsGrid.innerHTML += cardHTML;
                 });
             }
 
-            // --- Modal & Notification Functions ---
-
+            // --- 8. MODALS & NOTIFICATIONS ---
             function openAnalyticsModal(pumpId) {
                 const data = currentAnalytics[pumpId];
                 if (!data) return;
@@ -1035,72 +613,29 @@
                 if (data.dosesList.length === 0) {
                     ui.modalContent.innerHTML = `<p class="text-gray-500 dark:text-gray-400">No dosing events recorded in this period.</p>`;
                 } else {
-                    const listHtml = data.dosesList
-                        .map(date => `<li class="py-1 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700">${date.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short', hour12: true })}</li>`)
-                        .reverse()
-                        .join('');
+                    const listHtml = data.dosesList.map(date => `<li class="py-1 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700">${date.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short', hour12: true })}</li>`).reverse().join('');
                     ui.modalContent.innerHTML = `<ul class="space-y-1 text-sm text-gray-700 dark:text-gray-300">${listHtml}</ul>`;
                 }
-                ui.modalOverlay.setAttribute('role', 'dialog');
-                ui.modalOverlay.setAttribute('aria-modal', 'true');
-                ui.modalOverlay.setAttribute('aria-labelledby', 'modal-title');
                 ui.modalOverlay.classList.remove('hidden');
-                setTimeout(() => {
-                    ui.modalOverlay.classList.add('open');
-                    ui.modalCloseBtn.focus();
-                    trapFocus(ui.modalOverlay, closeAnalyticsModal);
-                }, 10);
+                setTimeout(() => { ui.modalOverlay.classList.add('open'); ui.modalCloseBtn.focus(); trapFocus(ui.modalOverlay, closeAnalyticsModal); }, 10);
             }
 
             function closeAnalyticsModal() {
                 ui.modalOverlay.classList.remove('open');
-                if (ui.modalOverlay._trapFocusHandlers) {
-                    ui.modalOverlay.removeEventListener('keydown', ui.modalOverlay._trapFocusHandlers.handleTabKey);
-                    ui.modalOverlay.removeEventListener('keydown', ui.modalOverlay._trapFocusHandlers.handleEscapeKey);
-                    delete ui.modalOverlay._trapFocusHandlers;
-                }
-                setTimeout(() => {
-                    ui.modalOverlay.classList.add('hidden');
-                    ui.modalOverlay.removeAttribute('role');
-                    ui.modalOverlay.removeAttribute('aria-modal');
-                    ui.modalOverlay.removeAttribute('aria-labelledby');
-                    if (lastFocusedElement) {
-                        lastFocusedElement.focus();
-                        lastFocusedElement = null;
-                    }
-                }, 300);
+                if (ui.modalOverlay._trapFocusHandlers) { ui.modalOverlay.removeEventListener('keydown', ui.modalOverlay._trapFocusHandlers.handleTabKey); ui.modalOverlay.removeEventListener('keydown', ui.modalOverlay._trapFocusHandlers.handleEscapeKey); delete ui.modalOverlay._trapFocusHandlers; }
+                setTimeout(() => { ui.modalOverlay.classList.add('hidden'); if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; } }, 300);
             }
 
             function openConfirmModal() {
                 lastFocusedElement = document.activeElement;
-                ui.confirmModalOverlay.setAttribute('role', 'dialog');
-                ui.confirmModalOverlay.setAttribute('aria-modal', 'true');
-                ui.confirmModalOverlay.setAttribute('aria-labelledby', 'confirm-modal-title');
                 ui.confirmModalOverlay.classList.remove('hidden');
-                setTimeout(() => {
-                    ui.confirmModalOverlay.classList.add('open');
-                    ui.confirmModalCancelBtn.focus();
-                    trapFocus(ui.confirmModalOverlay, closeConfirmModal);
-                }, 10);
+                setTimeout(() => { ui.confirmModalOverlay.classList.add('open'); ui.confirmModalCancelBtn.focus(); trapFocus(ui.confirmModalOverlay, closeConfirmModal); }, 10);
             }
 
             function closeConfirmModal() {
                 ui.confirmModalOverlay.classList.remove('open');
-                if (ui.confirmModalOverlay._trapFocusHandlers) {
-                    ui.confirmModalOverlay.removeEventListener('keydown', ui.confirmModalOverlay._trapFocusHandlers.handleTabKey);
-                    ui.confirmModalOverlay.removeEventListener('keydown', ui.confirmModalOverlay._trapFocusHandlers.handleEscapeKey);
-                    delete ui.confirmModalOverlay._trapFocusHandlers;
-                }
-                setTimeout(() => {
-                    ui.confirmModalOverlay.classList.add('hidden');
-                    ui.confirmModalOverlay.removeAttribute('role');
-                    ui.confirmModalOverlay.removeAttribute('aria-modal');
-                    ui.confirmModalOverlay.removeAttribute('aria-labelledby');
-                    if (lastFocusedElement) {
-                        lastFocusedElement.focus();
-                        lastFocusedElement = null;
-                    }
-                }, 300);
+                if (ui.confirmModalOverlay._trapFocusHandlers) { ui.confirmModalOverlay.removeEventListener('keydown', ui.confirmModalOverlay._trapFocusHandlers.handleTabKey); ui.confirmModalOverlay.removeEventListener('keydown', ui.confirmModalOverlay._trapFocusHandlers.handleEscapeKey); delete ui.confirmModalOverlay._trapFocusHandlers; }
+                setTimeout(() => { ui.confirmModalOverlay.classList.add('hidden'); if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; } }, 300);
             }
 
             function handleConfirmDownload() {
@@ -1110,85 +645,36 @@
                 closeConfirmModal();
             }
 
-            // NEW: Notification Sidebar Functions
             function openNotificationSidebar() {
                 lastFocusedElement = document.activeElement;
-                
-                // Make overlay visible
                 ui.notificationOverlay.classList.remove('hidden');
                 ui.notificationOverlay.classList.add('pointer-events-auto');
-                
-                // Slide in sidebar
                 ui.notificationSidebar.classList.remove('translate-x-full');
-                
-                // Set ARIA attributes
-                ui.notificationSidebar.setAttribute('role', 'dialog');
-                ui.notificationSidebar.setAttribute('aria-modal', 'true');
-                ui.notificationSidebar.setAttribute('aria-labelledby', 'notification-title');
-
-                setTimeout(() => {
-                    ui.notificationCloseBtn.focus();
-                    trapFocus(ui.notificationSidebar, closeNotificationSidebar);
-                }, 10); // Wait for transition to start
-                
-                // Clear badge
+                setTimeout(() => { ui.notificationCloseBtn.focus(); trapFocus(ui.notificationSidebar, closeNotificationSidebar); }, 10);
                 unreadNotifications = 0;
                 ui.notificationBadge.classList.add('hidden');
             }
 
             function closeNotificationSidebar() {
-                // Start slide-out animation
                 ui.notificationSidebar.classList.add('translate-x-full');
-                
-                // Remove ARIA attributes
-                ui.notificationSidebar.removeAttribute('role');
-                ui.notificationSidebar.removeAttribute('aria-modal');
-                ui.notificationSidebar.removeAttribute('aria-labelledby');
-                
-                // Remove focus trap listeners
-                if (ui.notificationSidebar._trapFocusHandlers) {
-                    ui.notificationSidebar.removeEventListener('keydown', ui.notificationSidebar._trapFocusHandlers.handleTabKey);
-                    ui.notificationSidebar.removeEventListener('keydown', ui.notificationSidebar._trapFocusHandlers.handleEscapeKey);
-                    delete ui.notificationSidebar._trapFocusHandlers;
-                }
-
-                // Return focus
-                if (lastFocusedElement) {
-                    lastFocusedElement.focus();
-                    lastFocusedElement = null;
-                }
-                
-                // Hide overlay instantly
+                if (ui.notificationSidebar._trapFocusHandlers) { ui.notificationSidebar.removeEventListener('keydown', ui.notificationSidebar._trapFocusHandlers.handleTabKey); ui.notificationSidebar.removeEventListener('keydown', ui.notificationSidebar._trapFocusHandlers.handleEscapeKey); delete ui.notificationSidebar._trapFocusHandlers; }
+                if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; }
                 ui.notificationOverlay.classList.add('hidden');
                 ui.notificationOverlay.classList.remove('pointer-events-auto');
             }
-            
-            // NEW: Notification Generation
+
             function checkPumpChangesForNotifications(current, last) {
                 [1, 2, 3, 4].forEach(num => {
-                    // Check if pump *just* turned ON (was false, is now true)
                     if (current[num] && !last[num]) {
-                        addNotification(
-                            pumpNames[num],
-                            "Dosing pump activated by system.",
-                            "power"
-                        );
+                        addNotification(pumpNames[num], "Dosing pump activated by system.", "power");
                     }
                 });
             }
 
             function addNotification(title, message, icon) {
-                const newNotification = {
-                    id: Date.now(),
-                    title,
-                    message,
-                    icon,
-                    time: new Date()
-                };
-                
-                notifications.unshift(newNotification); // Add to start of array
+                const newNotification = { id: Date.now(), title, message, icon, time: new Date() };
+                notifications.unshift(newNotification);
                 unreadNotifications++;
-                
                 renderNotifications();
                 ui.notificationBadge.classList.remove('hidden');
             }
@@ -1209,184 +695,74 @@
                                 <p class="text-sm text-gray-600 dark:text-gray-300">${n.message}</p>
                                 <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">${n.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</p>
                             </div>
-                        </div>
-                    `).join('');
+                        </div>`).join('');
                 }
             }
 
-
             function trapFocus(element, closeFunction) {
-                const focusableElements = element.querySelectorAll(
-                    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-                );
+                const focusableElements = element.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
                 const firstFocusable = focusableElements[0];
                 const lastFocusable = focusableElements[focusableElements.length - 1];
-
                 function handleTabKey(e) {
                     if (e.key !== 'Tab') return;
-                    if (e.shiftKey) {
-                        if (document.activeElement === firstFocusable) {
-                            e.preventDefault();
-                            lastFocusable.focus();
-                        }
-                    } else {
-                        if (document.activeElement === lastFocusable) {
-                            e.preventDefault();
-                            firstFocusable.focus();
-                        }
-                    }
+                    if (e.shiftKey) { if (document.activeElement === firstFocusable) { e.preventDefault(); lastFocusable.focus(); } } 
+                    else { if (document.activeElement === lastFocusable) { e.preventDefault(); firstFocusable.focus(); } }
                 }
-
-                function handleEscapeKey(e) {
-                    if (e.key === 'Escape') {
-                        closeFunction();
-                    }
-                }
-
-                element.addEventListener('keydown', handleTabKey);
-                element.addEventListener('keydown', handleEscapeKey);
+                function handleEscapeKey(e) { if (e.key === 'Escape') closeFunction(); }
+                element.addEventListener('keydown', handleTabKey); element.addEventListener('keydown', handleEscapeKey);
                 element._trapFocusHandlers = { handleTabKey, handleEscapeKey };
             }
 
             async function loadData(showSpinners = true) {
-                if (showSpinners) {
-                    ui.loadingPh.style.display = 'flex';
-                    ui.loadingTds.style.display = 'flex';
-                }
+                if (showSpinners) { ui.loadingPh.style.display = 'flex'; ui.loadingTds.style.display = 'flex'; ui.loadingTemp.style.display = 'flex'; }
                 setErrorMessage(null);
                 ui.refreshButton.disabled = true;
-
                 try {
                     const response = await fetchRecentReadings();
                     const newFeeds = (response.feeds || []).slice(-MAX_POINTS);
                     updateDashboardUI(newFeeds);
                 } catch (err) {
-                    if (!navigator.onLine) {
-                        setErrorMessage("No internet connection. Please check your network.");
-                    } else if (err.message.includes('429')) {
-                        setErrorMessage("Rate limit exceeded. Please wait a moment.");
-                    } else if (err.message.includes('401') || err.message.includes('403')) {
-                        setErrorMessage("Authentication error. Check API key.");
-                    } else {
-                        setErrorMessage(err.message);
-                    }
-                    ui.loadingPh.style.display = 'none';
-                    ui.loadingTds.style.display = 'none';
+                    setErrorMessage(err.message);
+                    ui.loadingPh.style.display = 'none'; ui.loadingTds.style.display = 'none'; ui.loadingTemp.style.display = 'none';
                 } finally {
                     ui.refreshButton.disabled = false;
                 }
             }
 
-            function setErrorMessage(message) {
-                ui.errorMessage.textContent = message ? `Error: ${message}` : "";
-            }
+            function setErrorMessage(message) { ui.errorMessage.textContent = message ? `Error: ${message}` : ""; }
 
-            // --- 8. INITIALIZATION ---
-            
-            // Sidebar toggle for mobile
-            ui.menuToggle.addEventListener('click', () => {
-                ui.sidebar.classList.toggle('-translate-x-full');
-                ui.sidebarOverlay.classList.toggle('hidden'); 
-            });
-            
-            ui.sidebarOverlay.addEventListener('click', () => {
-                ui.sidebar.classList.add('-translate-x-full');
-                ui.sidebarOverlay.classList.add('hidden');
-            });
-
-            ui.sidebar.querySelectorAll('a').forEach(link => {
-                link.addEventListener('click', () => {
-                    if (!ui.sidebarOverlay.classList.contains('hidden')) {
-                        ui.sidebar.classList.add('-translate-x-full');
-                        ui.sidebarOverlay.classList.add('hidden');
-                    }
-                });
-            });
-            
-            ui.themeToggle.addEventListener('click', () => {
-                const isDark = document.documentElement.classList.toggle('dark');
-                localStorage.theme = isDark ? 'dark' : 'light';
-            });
-
-            ui.refreshButton.addEventListener('click', () => {
-                ui.refreshButton.classList.add('refreshing');
-                loadData(true);
-                if (phChartInstance) phChartInstance.update(phChartInstance.data, phChartInstance.options);
-                if (tdsChartInstance) tdsChartInstance.update(tdsChartInstance.data, tdsChartInstance.options);
-                
-                setTimeout(() => {
-                    ui.refreshButton.classList.remove('refreshing');
-                }, 1000);
-            });
-            
-            // --- UPDATED Event Listener Section ---
-
+            // --- 9. INITIALIZATION ---
+            ui.menuToggle.addEventListener('click', () => { ui.sidebar.classList.toggle('-translate-x-full'); ui.sidebarOverlay.classList.toggle('hidden'); });
+            ui.sidebarOverlay.addEventListener('click', () => { ui.sidebar.classList.add('-translate-x-full'); ui.sidebarOverlay.classList.add('hidden'); });
+            ui.sidebar.querySelectorAll('a').forEach(link => { link.addEventListener('click', () => { if (!ui.sidebarOverlay.classList.contains('hidden')) { ui.sidebar.classList.add('-translate-x-full'); ui.sidebarOverlay.classList.add('hidden'); } }); });
+            ui.themeToggle.addEventListener('click', () => { const isDark = document.documentElement.classList.toggle('dark'); localStorage.theme = isDark ? 'dark' : 'light'; });
+            ui.refreshButton.addEventListener('click', () => { ui.refreshButton.classList.add('refreshing'); loadData(true); setTimeout(() => { ui.refreshButton.classList.remove('refreshing'); }, 1000); });
             ui.downloadCsvButton.addEventListener('click', openConfirmModal);
-
-            ui.pumpAnalyticsGrid.addEventListener('click', (e) => {
-                const card = e.target.closest('[data-pump-id]');
-                if (card) {
-                    openAnalyticsModal(card.dataset.pumpId);
-                }
-            });
-
-            // Analytics Modal close button listeners
+            ui.pumpAnalyticsGrid.addEventListener('click', (e) => { const card = e.target.closest('[data-pump-id]'); if (card) openAnalyticsModal(card.dataset.pumpId); });
             ui.modalCloseBtn.addEventListener('click', closeAnalyticsModal);
-            ui.modalOverlay.addEventListener('click', (e) => {
-                if (e.target === ui.modalOverlay) {
-                    closeAnalyticsModal();
-                }
-            });
-
-            // Confirmation Modal button listeners
+            ui.modalOverlay.addEventListener('click', (e) => { if (e.target === ui.modalOverlay) closeAnalyticsModal(); });
             ui.confirmModalCloseBtn.addEventListener('click', closeConfirmModal);
             ui.confirmModalCancelBtn.addEventListener('click', closeConfirmModal);
-            ui.confirmModalOverlay.addEventListener('click', (e) => {
-                if (e.target === ui.confirmModalOverlay) {
-                    closeConfirmModal();
-                }
-            });
+            ui.confirmModalOverlay.addEventListener('click', (e) => { if (e.target === ui.confirmModalOverlay) closeConfirmModal(); });
             ui.confirmModalDownloadBtn.addEventListener('click', handleConfirmDownload);
-
-            // NEW: Notification Sidebar Listeners
             ui.notificationButton.addEventListener('click', openNotificationSidebar);
             ui.notificationCloseBtn.addEventListener('click', closeNotificationSidebar);
             ui.notificationOverlay.addEventListener('click', closeNotificationSidebar);
 
-
-            // --- 9. SPLASH SCREEN LOGIC ---
             const splashScreen = document.getElementById('splash-screen');
             const appContent = document.getElementById('app-content');
-
-            setTimeout(() => {
-                splashScreen.classList.add('fade-out');
-                appContent.classList.add('fade-in');
-                setTimeout(() => {
-                    splashScreen.style.display = 'none';
-                }, 600);
-            }, 2500); 
+            setTimeout(() => { splashScreen.classList.add('fade-out'); appContent.classList.add('fade-in'); setTimeout(() => { splashScreen.style.display = 'none'; }, 600); }, 2500); 
             
-            // Initial load
             loadData(true);
+            if (iotConfig.pollIntervalMs > 0) setInterval(() => loadData(false), iotConfig.pollIntervalMs);
             
-            // Set up auto-refresh
-            if (iotConfig.pollIntervalMs > 0) {
-                setInterval(() => loadData(false), iotConfig.pollIntervalMs);
-            }
-            
-            // Redraw charts on window resize to adjust labels
             let resizeTimeout;
             window.addEventListener('resize', () => {
                 clearTimeout(resizeTimeout);
                 resizeTimeout = setTimeout(() => {
-                    if (phChartInstance && currentFeeds.length > 0) {
-                        const phData = buildPhChartData(currentFeeds);
-                        phChartInstance.update(phData.data, phChartInstance.options);
-                    }
-                    if (tdsChartInstance && currentFeeds.length > 0) {
-                        const tdsData = buildTdsChartData(currentFeeds);
-                        tdsChartInstance.update(tdsData.data, tdsChartInstance.options);
-                    }
+                    if (phChartInstance && currentFeeds.length > 0) { const phData = buildPhChartData(currentFeeds); phChartInstance.update(phData.data, phChartInstance.options); }
+                    if (tdsChartInstance && currentFeeds.length > 0) { const tdsData = buildTdsChartData(currentFeeds); tdsChartInstance.update(tdsData.data, tdsChartInstance.options); }
+                    if (tempChartInstance && currentFeeds.length > 0) { const tempData = buildTempChartData(currentFeeds); tempChartInstance.update(tempData.data, tempChartInstance.options); }
                 }, 500); 
             });
         });
