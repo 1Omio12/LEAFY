@@ -101,6 +101,15 @@
             50% { transform: scale(1.03); opacity: 0.9; }
         }
 
+        /* Warning Blink Animation */
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .animate-blink {
+            animation: blink 1.5s infinite ease-in-out;
+        }
+
         #splash-icon { animation: logoMorph 2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards, breathe 3s ease-in-out 2s infinite; }
         .letter { display: inline-block; opacity: 0; animation: letterFadeIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; font-weight: 800; }
         #splash-screen.fade-out { animation: fadeOut 0.6s ease-out forwards; }
@@ -137,6 +146,10 @@
         .modal-overlay { transition: opacity 0.3s ease; }
         .modal-card { transition: all 0.3s ease; transform: translateY(-20px) scale(0.95); opacity: 0; }
         .modal-overlay.open .modal-card { transform: translateY(0) scale(1); opacity: 1; }
+        
+        /* Warning Text Highlight */
+        .text-warning { color: #ef4444 !important; } /* Red-500 */
+        .dark .text-warning { color: #f87171 !important; } /* Red-400 */
     </style>
 </head>
 <body class="transition-colors duration-300">
@@ -206,19 +219,28 @@
             <main class="flex-1 overflow-x-hidden overflow-y-scroll p-4 md:p-6">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6">
                     
+                    <!-- TDS CARD -->
                     <div class="stat-card bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl flex items-center space-x-4 border border-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:shadow-gray-900/50" style="--delay: 1">
                         <div class="p-3 bg-gradient-to-br from-emerald-100 to-emerald-200 text-emerald-600 rounded-xl shadow-inner dark:from-emerald-800/50 dark:to-emerald-900/50 dark:text-emerald-300">
                             <span class="material-icons text-3xl">science</span>
                         </div>
                         <div>
                             <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Latest TDS</p>
-                            <div class="flex items-baseline space-x-2">
-                                <h2 id="latest-tds" class="text-4xl font-bold text-gray-900 stat-value dark:text-white">--</h2>
-                                <span class="text-lg text-gray-500 dark:text-gray-400">ppm</span>
+                            <div class="flex items-center space-x-2">
+                                <div class="flex items-baseline space-x-1">
+                                    <h2 id="latest-tds" class="text-4xl font-bold text-gray-900 stat-value dark:text-white">--</h2>
+                                    <span class="text-lg text-gray-500 dark:text-gray-400">ppm</span>
+                                </div>
+                            </div>
+                            <!-- Warning Indicator TDS -->
+                            <div id="tds-warning" class="hidden items-center text-red-500 dark:text-red-400 text-xs font-bold mt-1 animate-blink">
+                                <span class="material-icons text-sm mr-1">warning</span>
+                                <span id="tds-warning-text">Out of Range</span>
                             </div>
                         </div>
                     </div>
                     
+                    <!-- pH CARD -->
                     <div class="stat-card bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl flex items-center space-x-4 border border-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:shadow-gray-900/50" style="--delay: 2">
                         <div class="p-3 bg-gradient-to-br from-emerald-100 to-emerald-200 text-emerald-600 rounded-xl shadow-inner dark:from-emerald-800/50 dark:to-emerald-900/50 dark:text-emerald-300">
                             <span class="material-icons text-3xl">opacity</span>
@@ -226,6 +248,11 @@
                         <div>
                             <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Latest pH</p>
                             <h2 id="latest-ph" class="text-4xl font-bold text-gray-900 stat-value dark:text-white">--</h2>
+                             <!-- Warning Indicator pH -->
+                             <div id="ph-warning" class="hidden items-center text-red-500 dark:text-red-400 text-xs font-bold mt-1 animate-blink">
+                                <span class="material-icons text-sm mr-1">warning</span>
+                                <span id="ph-warning-text">Acidic/Alkaline</span>
+                            </div>
                         </div>
                     </div>
 
@@ -360,6 +387,12 @@
                 pollIntervalMs: 30000,
             };
             
+            // WARNING THRESHOLDS
+            const THRESHOLDS = {
+                ph: { min: 5.9, max: 6.3 },
+                tds: { min: 900, max: 1100 }
+            };
+            
             const MAX_POINTS = Math.max(6, Math.min(iotConfig.results || 40, 60));
             
             // --- 2. GLOBAL STATE ---
@@ -367,7 +400,7 @@
             let lastPumpStates = { 1: false, 2: false, 3: false, 4: false };
             let phChartInstance;
             let tdsChartInstance;
-            let tempChartInstance; // NEW
+            let tempChartInstance;
             let currentFeeds = [];
             let currentAnalytics = {};
             let lastFocusedElement = null;
@@ -385,14 +418,14 @@
             const ui = {
                 tds: document.getElementById('latest-tds'),
                 ph: document.getElementById('latest-ph'),
-                temp: document.getElementById('latest-temp'), // NEW
+                temp: document.getElementById('latest-temp'),
                 updateTime: document.getElementById('last-update-time'),
                 updateDate: document.getElementById('last-update-date'),
                 errorMessage: document.getElementById('error-message'),
                 refreshButton: document.getElementById('refresh-button'),
                 loadingPh: document.getElementById('loading-ph'),
                 loadingTds: document.getElementById('loading-tds'),
-                loadingTemp: document.getElementById('loading-temp'), // NEW
+                loadingTemp: document.getElementById('loading-temp'),
                 sidebar: document.getElementById('sidebar'),
                 menuToggle: document.getElementById('menu-toggle'),
                 themeToggle: document.getElementById('theme-toggle'),
@@ -414,6 +447,11 @@
                 notificationCloseBtn: document.getElementById('notification-close-btn'),
                 notificationList: document.getElementById('notification-list'),
                 notificationPlaceholder: document.getElementById('notification-placeholder'),
+                // WARNING ELEMENTS
+                tdsWarning: document.getElementById('tds-warning'),
+                tdsWarningText: document.getElementById('tds-warning-text'),
+                phWarning: document.getElementById('ph-warning'),
+                phWarningText: document.getElementById('ph-warning-text')
             };
 
             // --- 4. THINGSPEAK API ---
@@ -488,7 +526,6 @@
                 return { data: { labels, series: [phSeries] }, options: options };
             }
 
-            // NEW: Temperature Chart Builder
             function buildTempChartData(feeds) {
                 const labels = getResponsiveChartLabels(feeds);
                 const tempSeries = feeds.map(feed => normalizeNumber(feed.field3));
@@ -514,13 +551,54 @@
                 // Update Stats
                 const latestTds = normalizeNumber(latestFeed.field1);
                 const latestPh = normalizeNumber(latestFeed.field2);
-                const latestTemp = normalizeNumber(latestFeed.field3); // Fetch Temperature
+                const latestTemp = normalizeNumber(latestFeed.field3);
                 const lastUpdated = latestFeed.created_at ? new Date(latestFeed.created_at) : null;
 
                 ui.tds.textContent = latestTds !== null ? latestTds.toFixed(0) : "N/A";
                 ui.ph.textContent = latestPh !== null ? latestPh.toFixed(2) : "N/A";
-                ui.temp.textContent = latestTemp !== null ? latestTemp.toFixed(1) : "N/A"; // Display Temp
+                ui.temp.textContent = latestTemp !== null ? latestTemp.toFixed(1) : "N/A";
                 
+                // --- WARNING LOGIC ---
+                
+                // pH Warning Check: > 6.3 or < 5.9
+                if (latestPh !== null) {
+                    if (latestPh > THRESHOLDS.ph.max) {
+                        ui.phWarning.classList.remove('hidden');
+                        ui.phWarning.classList.add('flex');
+                        ui.phWarningText.textContent = `High pH (>${THRESHOLDS.ph.max})`;
+                        ui.ph.classList.add('text-warning');
+                    } else if (latestPh < THRESHOLDS.ph.min) {
+                        ui.phWarning.classList.remove('hidden');
+                        ui.phWarning.classList.add('flex');
+                        ui.phWarningText.textContent = `Low pH (<${THRESHOLDS.ph.min})`;
+                        ui.ph.classList.add('text-warning');
+                    } else {
+                        ui.phWarning.classList.add('hidden');
+                        ui.phWarning.classList.remove('flex');
+                        ui.ph.classList.remove('text-warning');
+                    }
+                }
+
+                // TDS Warning Check: > 1100 or < 900
+                if (latestTds !== null) {
+                    if (latestTds > THRESHOLDS.tds.max) {
+                        ui.tdsWarning.classList.remove('hidden');
+                        ui.tdsWarning.classList.add('flex');
+                        ui.tdsWarningText.textContent = `High TDS (>${THRESHOLDS.tds.max})`;
+                        ui.tds.classList.add('text-warning');
+                    } else if (latestTds < THRESHOLDS.tds.min) {
+                        ui.tdsWarning.classList.remove('hidden');
+                        ui.tdsWarning.classList.add('flex');
+                        ui.tdsWarningText.textContent = `Low TDS (<${THRESHOLDS.tds.min})`;
+                        ui.tds.classList.add('text-warning');
+                    } else {
+                        ui.tdsWarning.classList.add('hidden');
+                        ui.tdsWarning.classList.remove('flex');
+                        ui.tds.classList.remove('text-warning');
+                    }
+                }
+
+                // Update Time display
                 if (lastUpdated) {
                     ui.updateTime.textContent = lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
                     ui.updateDate.textContent = lastUpdated.toLocaleDateString();
@@ -529,7 +607,6 @@
                     ui.updateDate.textContent = "No data";
                 }
                 
-                // Notifications logic (Pump 1 logic will likely fail/ignore here, which is fine)
                 pumpStates = getPumpStatesFromFeed(latestFeed);
                 checkPumpChangesForNotifications(pumpStates, lastPumpStates);
                 lastPumpStates = { ...pumpStates };
@@ -546,7 +623,7 @@
                 // Update Charts
                 const phChartData = buildPhChartData(feeds);
                 const tdsChartData = buildTdsChartData(feeds);
-                const tempChartData = buildTempChartData(feeds); // Build Temp Data
+                const tempChartData = buildTempChartData(feeds); 
                 
                 if (phChartInstance) phChartInstance.update(phChartData.data, phChartData.options);
                 else phChartInstance = new Chartist.Line('#chart-ph', phChartData.data, phChartData.options); 
@@ -554,7 +631,6 @@
                 if (tdsChartInstance) tdsChartInstance.update(tdsChartData.data, tdsChartData.options);
                 else tdsChartInstance = new Chartist.Line('#chart-tds', tdsChartData.data, tdsChartData.options); 
                 
-                // Render Temp Chart
                 if (tempChartInstance) tempChartInstance.update(tempChartData.data, tempChartData.options);
                 else tempChartInstance = new Chartist.Line('#chart-temp', tempChartData.data, tempChartData.options); 
                 
@@ -566,7 +642,6 @@
             function calculatePumpAnalytics(feeds) {
                 let analytics = { 1: { dosesList: [] }, 2: { dosesList: [] }, 3: { dosesList: [] }, 4: { dosesList: [] } };
                 for (const feed of feeds) {
-                    // Field 3 is now temperature, so this check usually returns false
                     if (feed.field3 === "1") analytics[1].dosesList.push(new Date(feed.created_at));
                     if (feed.field4 === "1") analytics[2].dosesList.push(new Date(feed.created_at));
                     if (feed.field5 === "1") analytics[3].dosesList.push(new Date(feed.created_at));
@@ -585,7 +660,6 @@
                 [1, 2, 3, 4].forEach(num => {
                     const data = analytics[num];
                     const lastDosedTime = data.lastDosed ? data.lastDosed.toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true }) : 'Never in this period';
-                    // Visual fix for Pump 1 which is now Temperature
                     const displayCount = (num == 1) ? "-" : data.totalDoses;
                     const displaySub = (num == 1) ? "Data on Field 3 is Temp" : "doses";
                     
