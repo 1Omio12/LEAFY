@@ -1,845 +1,1245 @@
 <!DOCTYPE html>
-<html lang="en" class="">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LEAFY Dashboard</title>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <script>
-        tailwind.config = {
-            darkMode: 'class'
-        }
-    </script>
-    
-    <script>
-        if (localStorage.theme === 'dark') {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-    </script>
-    
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
-    <script src="https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
-    
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chartist-plugin-axistitle@latest/dist/chartist-plugin-axistitle.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chartist-plugin-axistitle@latest/dist/chartist-plugin-axistitle.min.js"></script>
-    
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e5e7eb 100%);
-            background-attachment: fixed;
-            transition: background-color 0.3s;
-        }
-        .dark body {
-            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-            background-attachment: fixed;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leafy® — An IoT & AI based Hydroponic Roof Gardening System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* Chart Styles */
-        .ct-label { color: #6b7280; font-size: 11px; font-weight: 500; }
-        @media (min-width: 768px) { .ct-label { font-size: 13px; } }
-        .ct-grid { stroke: #e5e7eb; stroke-dasharray: 2px; }
-        .dark .ct-label { color: #9ca3af; }
-        .dark .ct-grid { stroke: #374151; }
+:root {
+  /* Premium Light Green "Sage, Mint & Spruce" Palette */
+  --bg-main:         #F3F7F4; /* Soft, refreshing mint-white */
+  --bg-card:         #FFFFFF; /* Crisp contrast white */
+  --bg-soft:         #E5EFE7; /* Light herbal sage */
+  --bg-accent-pale:  #E2F5E7; /* Soft sprout green for badges */
+  
+  --text-main:       #0A2512; /* Luxurious deep spruce (ultra-high contrast) */
+  --text-mid:        #26402C; /* Rich moss/forest green for body text */
+  --text-muted:      #526D57; /* Botanical grey-green for metadata */
+  
+  --brand-green:     #15803D; /* Classic organic green */
+  --brand-glow:      #10B981; /* High-tech active emerald */
+  --brand-lime:      #65A30D; /* Automation AI Sprout Lime */
+  
+  --border-light:    rgba(10, 37, 18, 0.08); /* Elegant subtle borders */
+  --border-medium:   rgba(10, 37, 18, 0.16);
+  
+  --shadow-sm:       0 2px 10px rgba(10, 37, 18, 0.03);
+  --shadow-md:       0 8px 30px rgba(10, 37, 18, 0.05);
+  --shadow-lg:       0 16px 40px rgba(10, 37, 18, 0.07);
+}
 
-        .ct-axis-title { font-size: 10px; fill: #6b7280; font-weight: 600; }
-        @media (min-width: 768px) { .ct-axis-title { font-size: 12px; } }
-        .dark .ct-axis-title { fill: #9ca3af; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-main); overflow-x: hidden; -webkit-font-smoothing: antialiased; }
 
-        .ct-line { stroke-width: 3px; }
-        .ct-point { stroke-width: 5px; stroke-linecap: round; }
-        .ct-area { fill-opacity: 0.1; }
-        
-        /* pH Chart (Green Theme) */
-        .chart-ph .ct-line, .chart-ph .ct-point { stroke: #10b981; }
-        .chart-ph .ct-area { fill: #10b981; }
-        
-        /* TDS Chart (Teal Theme) */
-        .chart-tds .ct-line, .chart-tds .ct-point { stroke: #059669; }
-        .chart-tds .ct-area { fill: #059669; }
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  height: 76px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 60px;
+  background: rgba(243, 247, 244, 0.85); /* Blurred Mint-White */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-light);
+  transition: all 0.3s ease;
+}
+.nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.nav-logo-text {
+  font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 1.5rem;
+  color: var(--text-main); letter-spacing: -0.02em;
+}
+.nav-logo-text sup { color: var(--brand-glow); font-size: 0.5em; vertical-align: super; }
+.nav-logo-sub { font-size: 0.65rem; color: var(--text-muted); letter-spacing: 0.04em; font-weight: 600; margin-top: -3px; display: block; }
+.nav-links { display: flex; align-items: center; gap: 32px; }
+.nav-links a { font-size: 0.88rem; font-weight: 600; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
+.nav-links a:hover { color: var(--brand-glow); }
+.nav-cta { background: var(--text-main) !important; color: #ffffff !important; padding: 12px 24px; border-radius: 8px; font-weight: 700 !important; box-shadow: var(--shadow-sm); transition: transform 0.2s, background 0.2s !important; }
+.nav-cta:hover { background: var(--brand-green) !important; transform: translateY(-1px); }
 
-        /* NEW: Temperature Chart (Orange Theme) */
-        .chart-temp .ct-line, .chart-temp .ct-point { stroke: #f97316; /* orange-500 */ }
-        .chart-temp .ct-area { fill: #f97316; }
+/* ── HERO ── */
+.hero {
+  min-height: 100vh; background: var(--bg-main);
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 130px 60px 90px; position: relative; overflow: hidden;
+}
+.hero-bg {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(circle 600px at 80% 40%, rgba(16, 185, 129, 0.08) 0%, transparent 100%),
+    radial-gradient(circle 500px at 15% 80%, rgba(101, 163, 13, 0.07) 0%, transparent 100%);
+}
+.hero-grid {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image: linear-gradient(rgba(10, 37, 18, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(10, 37, 18, 0.015) 1px, transparent 1px);
+  background-size: 80px 80px;
+}
+.hero-inner { position: relative; z-index: 2; max-width: 1300px; margin: 0 auto; width: 100%; display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 80px; align-items: center; }
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--bg-accent-pale); border: 1px solid rgba(16, 185, 129, 0.2);
+  color: var(--brand-green); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; padding: 6px 14px; border-radius: 100px; margin-bottom: 24px;
+}
+.hero-tag-dot { width: 6px; height: 6px; background: var(--brand-glow); border-radius: 50%; animation: blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+.hero-eyebrow { font-size: 0.78rem; font-weight: 700; color: var(--brand-green); letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 14px; }
+.hero-h1 {
+  font-family: 'Montserrat', sans-serif; font-weight: 900;
+  font-size: clamp(2.8rem, 5.2vw, 4.8rem); line-height: 1.05;
+  color: var(--text-main); letter-spacing: -0.03em; margin-bottom: 24px;
+}
+.hero-h1 .lime { color: var(--brand-green); background: linear-gradient(135deg, var(--brand-green), var(--brand-glow)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero-sub { font-size: 1.05rem; color: var(--text-mid); line-height: 1.75; max-width: 530px; margin-bottom: 38px; }
+.hero-sub strong { color: var(--text-main); font-weight: 700; }
+.hero-btns { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 48px; }
+.btn-lime {
+  background: var(--text-main); color: #ffffff; padding: 14px 32px;
+  border-radius: 8px; font-weight: 700; font-size: 0.95rem; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease;
+  font-family: 'Montserrat', sans-serif; box-shadow: var(--shadow-sm);
+}
+.btn-lime:hover { background: var(--brand-green); transform: translateY(-1.5px); box-shadow: var(--shadow-md); }
+.btn-ghost {
+  border: 1px solid var(--border-medium); color: var(--text-main);
+  padding: 14px 28px; border-radius: 8px; font-weight: 700; font-size: 0.95rem;
+  text-decoration: none; transition: all 0.2s ease; background: transparent;
+}
+.btn-ghost:hover { border-color: var(--brand-green); color: var(--brand-green); background: rgba(16, 185, 129, 0.04); }
+.hero-award {
+  display: inline-flex; align-items: center; gap: 12px;
+  background: var(--bg-card); border: 1px solid var(--border-light);
+  border-radius: 10px; padding: 12px 18px; box-shadow: var(--shadow-sm);
+}
+.hero-award-icon { font-size: 1.5rem; }
+.hero-award-text { font-size: 0.8rem; color: var(--text-mid); line-height: 1.45; }
+.hero-award-text strong { color: var(--brand-green); display: block; font-size: 0.85rem; }
+.hero-right { display: flex; flex-direction: column; gap: 18px; }
+.hero-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.hero-stat {
+  background: var(--bg-card); border: 1px solid var(--border-light);
+  border-radius: 14px; padding: 24px 20px; box-shadow: var(--shadow-sm);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hero-stat:hover { border-color: var(--brand-glow); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.hero-stat-val {
+  font-family: 'Montserrat', sans-serif; font-weight: 900;
+  font-size: 2.1rem; color: var(--text-main); line-height: 1; margin-bottom: 6px; letter-spacing: -0.02em;
+}
+.hero-stat-val .accent { color: var(--brand-green); }
+.hero-stat-label { font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; font-weight: 500; }
 
-        /* Loading Spinner */
-        .spinner {
-            width: 40px; height: 40px;
-            border: 4px solid #e5e7eb; border-top: 4px solid #10b981;
-            border-radius: 50%;
-            animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
-        }
-        .dark .spinner { border: 4px solid #374151; border-top: 4px solid #10b981; }
-        
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        
-        /* Animations */
-        @keyframes fadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(1.1); } }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes countUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        
-        @keyframes logoMorph {
-            0% { transform: scale(0.5) rotate(45deg); opacity: 0; filter: blur(10px); }
-            100% { transform: scale(1) rotate(0deg); opacity: 1; filter: blur(0px); }
-        }
-        @keyframes letterFadeIn {
-            from { opacity: 0; transform: translateY(30px) scale(0.8); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes breathe {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.03); opacity: 0.9; }
-        }
+.hero-img-slot {
+  background: var(--bg-card); border: 2px dashed var(--border-medium);
+  border-radius: 16px; min-height: 240px; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 10px;
+  color: var(--text-muted); font-size: 0.78rem; font-weight: 600;
+  letter-spacing: 0.08em; text-align: center; padding: 24px; box-shadow: var(--shadow-sm);
+}
 
-        /* Warning Blink Animation */
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        .animate-blink {
-            animation: blink 1.5s infinite ease-in-out;
-        }
+/* ── SECTION COMMONS ── */
+.section-wrap { max-width: 1300px; margin: 0 auto; padding: 100px 60px; }
+.section-label { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--brand-green); margin-bottom: 12px; display: block; }
+.section-label-dark { color: var(--brand-green); }
+.section-h2 { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: clamp(2rem, 3.8vw, 3rem); line-height: 1.15; letter-spacing: -0.025em; color: var(--text-main); margin-bottom: 18px; }
+.section-h2 .lime { color: var(--brand-green); }
+.section-h2-light { color: var(--text-main); }
+.section-desc { font-size: 1.05rem; color: var(--text-mid); line-height: 1.75; max-width: 600px; }
+.section-desc-light { color: var(--text-mid); }
+.divider { height: 1px; background: var(--border-light); margin: 0; }
 
-        #splash-icon { animation: logoMorph 2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards, breathe 3s ease-in-out 2s infinite; }
-        .letter { display: inline-block; opacity: 0; animation: letterFadeIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; font-weight: 800; }
-        #splash-screen.fade-out { animation: fadeOut 0.6s ease-out forwards; }
-        
-        #app-content { opacity: 0; visibility: hidden; }
-        #app-content.fade-in { opacity: 1; visibility: visible; animation: fadeIn 0.5s ease-in forwards; }
-        
-        .loading-overlay {
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(4px);
-            display: flex; justify-content: center; align-items: center; z-index: 10;
-            border-radius: 0.75rem; transition: opacity 0.3s, background 0.3s;
-        }
-        .dark .loading-overlay { background: rgba(31, 41, 55, 0.95); }
-        
-        #sidebar { transition: transform 0.3s ease-in-out; }
-        #notification-sidebar { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+/* ── TRACTION ── */
+.traction-band { background: var(--bg-soft); border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light); }
+.traction-inner { max-width: 1300px; margin: 0 auto; padding: 0 60px; display: flex; flex-wrap: wrap; }
+.traction-item { flex: 1; min-width: 180px; padding: 32px 20px; border-right: 1px solid var(--border-light); text-align: center; }
+.traction-item:last-child { border-right: none; }
+.traction-val { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 2.3rem; color: var(--text-main); line-height: 1; letter-spacing: -0.02em; }
+.traction-lbl { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-top: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
 
-        .stat-card { animation: slideUp 0.6s ease-out forwards; animation-delay: calc(var(--delay) * 0.1s); opacity: 0; }
-        .stat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15); }
-        .dark .stat-card:hover { box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3); }
-        
-        .bg-white { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        
-        #refresh-button.refreshing { animation: rotate 1s linear; }
-        #refresh-button:hover { background-color: #f3f4f6; transform: scale(1.1); }
-        .dark #refresh-button:hover { background-color: #374151; }
-        
-        .stat-value { animation: countUp 0.5s ease-out; }
-        
-        .ct-chart { animation: fadeIn 0.8s ease-out 0.3s both; }
+/* ── PROBLEM ── */
+.problem-bg { background: var(--bg-soft); }
+.problem-inner { display: grid; grid-template-columns: 1fr 1.1fr; gap: 70px; align-items: start; margin-top: 52px; }
+.problem-img-slot { min-height: 400px; border-radius: 16px; background: var(--bg-card); border: 2px dashed var(--border-medium); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: var(--text-muted); font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em; text-align: center; padding: 30px; box-shadow: var(--shadow-sm); }
+.problem-cards { display: flex; flex-direction: column; gap: 16px; }
+.problem-card { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 14px; padding: 22px; display: flex; gap: 18px; align-items: flex-start; transition: all 0.2s ease; box-shadow: var(--shadow-sm); }
+.problem-card:hover { transform: translateY(-2px); border-color: var(--brand-glow); box-shadow: var(--shadow-md); }
+.problem-card-icon { font-size: 1.4rem; line-height: 1; min-width: 28px; margin-top: 2px; }
+.problem-card h4 { font-size: 1rem; font-weight: 800; color: var(--text-main); margin-bottom: 6px; }
+.problem-card p { font-size: 0.88rem; color: var(--text-mid); line-height: 1.65; }
+.problem-solutions { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 52px; }
+.solution-pill { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 12px; padding: 20px 18px; text-align: center; box-shadow: var(--shadow-sm); transition: transform 0.2s; }
+.solution-pill:hover { transform: scale(1.02); }
+.solution-pill .val { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 1.8rem; color: var(--brand-green); line-height: 1; }
+.solution-pill .lbl { font-size: 0.78rem; color: var(--text-muted); margin-top: 6px; line-height: 1.4; font-weight: 600; }
 
-        /* Modal Styles */
-        .modal-overlay { transition: opacity 0.3s ease; }
-        .modal-card { transition: all 0.3s ease; transform: translateY(-20px) scale(0.95); opacity: 0; }
-        .modal-overlay.open .modal-card { transform: translateY(0) scale(1); opacity: 1; }
-        
-        /* Warning Text Highlight */
-        .text-warning { color: #ef4444 !important; } /* Red-500 */
-        .dark .text-warning { color: #f87171 !important; } /* Red-400 */
-    </style>
+/* ── SOLUTION ── */
+.solution-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start; margin-top: 52px; }
+.solution-img-slot { min-height: 460px; border-radius: 16px; background: var(--bg-soft); border: 2px dashed var(--border-medium); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: var(--text-muted); font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em; text-align: center; padding: 30px; box-shadow: var(--shadow-sm); }
+.config-list { display: flex; flex-direction: column; gap: 16px; }
+.config-card { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 14px; padding: 24px; border-left: 5px solid var(--brand-green); transition: all 0.2s ease; box-shadow: var(--shadow-sm); }
+.config-card:hover { box-shadow: var(--shadow-md); border-color: var(--border-medium); border-left-color: var(--brand-glow); }
+.config-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.config-card h4 { font-size: 1.05rem; font-weight: 800; color: var(--text-main); }
+.config-badge { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; background: var(--bg-accent-pale); color: var(--brand-green); padding: 4px 12px; border-radius: 100px; text-transform: uppercase; }
+.config-card p { font-size: 0.88rem; color: var(--text-mid); line-height: 1.6; }
+.config-card .yield { font-size: 0.82rem; font-weight: 700; color: var(--brand-green); margin-top: 10px; display: inline-flex; align-items: center; gap: 4px; }
+.platform-box { background: var(--text-main); border-radius: 14px; padding: 24px; margin-top: 8px; box-shadow: var(--shadow-md); }
+.platform-box p { font-size: 0.88rem; color: rgba(255, 255, 255, 0.85); line-height: 1.7; }
+.platform-box strong { color: var(--brand-glow); }
+
+/* ── COMPARISON ── */
+.compare-bg { background: var(--bg-card); }
+.compare-table { width: 100%; border-collapse: collapse; margin-top: 48px; border-radius: 14px; overflow: hidden; border: 1px solid var(--border-light); box-shadow: var(--shadow-md); }
+.compare-table thead tr th { padding: 18px 20px; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+.compare-table thead .col-label { background: var(--bg-soft); color: var(--text-mid); text-align: left; }
+.compare-table thead .col-leafy { background: var(--text-main); color: #ffffff; text-align: center; }
+.compare-table thead .col-other { background: #EAEFED; color: var(--text-muted); text-align: center; }
+.compare-table tbody tr td { padding: 16px 20px; font-size: 0.92rem; border-bottom: 1px solid var(--border-light); }
+.compare-table tbody tr:last-child td { border-bottom: none; }
+.compare-table tbody .row-label { font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
+.compare-table tbody .cell-leafy { background: rgba(16, 185, 129, 0.06); font-weight: 700; color: var(--brand-green); text-align: center; }
+.compare-table tbody .cell-other { text-align: center; color: var(--text-muted); }
+.compare-table tbody tr:hover .cell-leafy { background: rgba(16, 185, 129, 0.12); }
+.check-yes { color: var(--brand-glow); font-weight: bold; font-size: 1.2rem; }
+.check-no { color: #A1B5A6; }
+
+/* ── USP ── */
+.usp-bg { background: var(--bg-soft); }
+.usp-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px; margin-top: 48px; background: var(--border-light); border-radius: 16px; overflow: hidden; border: 1px solid var(--border-light); box-shadow: var(--shadow-md); }
+.usp-item { background: var(--bg-card); padding: 38px 34px; transition: background 0.2s; }
+.usp-item:hover { background: rgba(16, 185, 129, 0.03); }
+.usp-num { font-family: 'Montserrat', sans-serif; font-size: 0.75rem; font-weight: 800; color: var(--brand-green); letter-spacing: 0.12em; margin-bottom: 12px; }
+.usp-item h3 { font-family: 'Montserrat', sans-serif; font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin-bottom: 12px; }
+.usp-item p { font-size: 0.9rem; color: var(--text-mid); line-height: 1.7; }
+
+/* ── MARKET ── */
+.market-bg { background: var(--bg-main); }
+.market-bubbles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 48px; }
+.market-tier { border-radius: 16px; padding: 34px 28px; text-align: center; position: relative; overflow: hidden; box-shadow: var(--shadow-sm); background: var(--bg-card); border: 1px solid var(--border-light); transition: transform 0.3s ease; }
+.market-tier:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+.market-tier.tam { border-top: 4px solid var(--brand-green); }
+.market-tier.sam { border-top: 4px solid var(--brand-glow); }
+.market-tier.som { border-top: 4px solid var(--brand-lime); }
+.tier-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; }
+.tier-usd { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 2.8rem; color: var(--text-main); line-height: 1; letter-spacing: -0.03em; }
+.tier-bdt { font-size: 0.8rem; color: var(--brand-green); margin-top: 6px; font-family: 'Montserrat', sans-serif; font-weight: 700; }
+.tier-desc { font-size: 0.85rem; color: var(--text-mid); margin-top: 14px; line-height: 1.6; }
+.tier-pop { font-size: 0.78rem; color: var(--brand-green); margin-top: 10px; font-weight: 700; }
+.market-callout { margin-top: 24px; background: var(--bg-soft); border: 1px solid var(--border-medium); border-radius: 12px; padding: 24px 30px; box-shadow: var(--shadow-sm); }
+.market-callout p { font-size: 0.92rem; color: var(--text-mid); line-height: 1.75; }
+.market-callout strong { color: var(--text-main); }
+
+/* ── ICP ── */
+.icp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 48px; }
+.icp-card { border: 1px solid var(--border-light); border-radius: 16px; overflow: hidden; background: var(--bg-card); box-shadow: var(--shadow-sm); transition: transform 0.2s ease; }
+.icp-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.icp-head { background: var(--bg-soft); padding: 24px 28px; display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: center; border-bottom: 1px solid var(--border-light); }
+.icp-photo { width: 62px; height: 62px; border-radius: 50%; background: var(--bg-card); border: 2px solid var(--brand-green); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; flex-shrink: 0; box-shadow: var(--shadow-sm); }
+.icp-name { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.15rem; color: var(--text-main); }
+.icp-tag { display: inline-block; background: var(--text-main); color: #ffffff; font-size: 0.68rem; font-weight: 700; padding: 3px 10px; border-radius: 100px; margin-bottom: 4px; letter-spacing: 0.06em; }
+.icp-meta { font-size: 0.8rem; color: var(--text-muted); margin-top: 3px; font-weight: 500; }
+.icp-body { padding: 24px 28px; }
+.icp-body p { font-size: 0.9rem; color: var(--text-mid); line-height: 1.7; margin-bottom: 16px; }
+.pain-list { display: flex; flex-direction: column; gap: 10px; }
+.pain-item { font-size: 0.85rem; color: var(--text-mid); line-height: 1.55; padding-left: 18px; position: relative; }
+.pain-item::before { content: '•'; position: absolute; left: 0; color: var(--brand-glow); font-size: 1.2rem; line-height: 1.2; }
+
+/* ── SUCCESS / TRACTION ── */
+.success-bg { background: var(--bg-soft); }
+.success-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 48px; }
+.success-card { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 14px; padding: 28px 20px; text-align: center; box-shadow: var(--shadow-sm); transition: all 0.2s ease; }
+.success-card:hover { border-color: var(--brand-glow); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.success-val { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 2.1rem; color: var(--brand-green); line-height: 1; letter-spacing: -0.02em; }
+.success-lbl { font-size: 0.8rem; color: var(--text-muted); margin-top: 8px; line-height: 1.45; font-weight: 600; }
+.success-story { background: var(--bg-card); border: 1px solid var(--border-medium); border-radius: 16px; padding: 32px 36px; margin-top: 24px; box-shadow: var(--shadow-sm); }
+.success-story p { font-size: 1rem; color: var(--text-mid); line-height: 1.8; }
+.success-story strong { color: var(--brand-green); font-weight: 700; }
+.img-gallery { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 28px; }
+.gallery-slot { aspect-ratio: 1.2; border-radius: 12px; background: var(--bg-card); border: 2px dashed var(--border-medium); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--text-muted); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em; text-align: center; padding: 14px; transition: border-color 0.2s; }
+.gallery-slot:hover { border-color: var(--brand-green); }
+
+/* ── REVENUE ── */
+.rev-bg { background: var(--bg-card); }
+.rev-streams { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 48px; }
+.rev-card { background: var(--bg-main); border: 1px solid var(--border-light); border-radius: 14px; padding: 28px 22px; position: relative; overflow: hidden; border-top: 5px solid var(--brand-green); box-shadow: var(--shadow-sm); transition: transform 0.2s; }
+.rev-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.rev-card h4 { font-size: 0.95rem; font-weight: 800; color: var(--text-main); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.rev-card .mechanism { font-size: 0.8rem; color: var(--text-mid); margin-bottom: 18px; line-height: 1.55; }
+.rev-usd { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 2rem; color: var(--text-main); line-height: 1; }
+.rev-usd sup { font-size: 0.5em; vertical-align: super; color: var(--brand-green); }
+.rev-bdt { font-size: 0.75rem; color: var(--text-muted); margin-top: 3px; font-weight: 500; }
+.rev-total-band { background: var(--text-main); border-radius: 14px; padding: 30px 36px; margin-top: 24px; display: flex; flex-wrap: wrap; gap: 36px; align-items: center; box-shadow: var(--shadow-lg); }
+.rev-total-item .val { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 2rem; color: #ffffff; line-height: 1; }
+.rev-total-item .val span { color: var(--brand-glow); }
+.rev-total-item .lbl { font-size: 0.78rem; color: rgba(255, 255, 255, 0.7); margin-top: 6px; font-weight: 500; }
+.farmer-incomes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 24px; }
+.farmer-income-card { background: var(--bg-soft); border: 1px solid var(--border-light); border-radius: 12px; padding: 24px; text-align: center; box-shadow: var(--shadow-sm); }
+.farmer-income-card .val { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 1.8rem; color: var(--brand-green); }
+.farmer-income-card .size { font-size: 0.82rem; font-weight: 700; color: var(--text-main); margin-top: 4px; }
+.farmer-income-card .bdt { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+.key-insight { font-size: 0.92rem; color: var(--text-mid); margin-top: 20px; padding: 18px 22px; background: var(--bg-soft); border-radius: 10px; border-left: 5px solid var(--brand-green); border-top: 1px solid var(--border-light); border-right: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light); }
+.key-insight strong { color: var(--brand-green); }
+
+/* ── FINANCIALS ── */
+.fin-bg { background: var(--bg-soft); }
+.fin-kpis { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 0; margin-bottom: 32px; }
+.fin-kpi { flex: 1; min-width: 150px; background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 12px; padding: 24px 20px; border-top: 4px solid var(--brand-green); box-shadow: var(--shadow-sm); }
+.fin-kpi .val { font-family: 'Montserrat', sans-serif; font-size: 1.8rem; font-weight: 900; color: var(--text-main); line-height: 1; }
+.fin-kpi .lbl { font-size: 0.75rem; color: var(--text-muted); margin-top: 8px; line-height: 1.45; font-weight: 600; }
+.fin-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border-light); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-md); background: var(--bg-card); }
+.fin-table thead th { padding: 16px 20px; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; background: var(--text-main); color: rgba(255, 255, 255, 0.9); text-align: right; }
+.fin-table thead th:first-child { text-align: left; }
+.fin-table tbody td { padding: 16px 20px; font-size: 0.9rem; color: var(--text-mid); border-bottom: 1px solid var(--border-light); text-align: right; }
+.fin-table tbody td:first-child { text-align: left; font-weight: 700; color: var(--text-main); }
+.fin-table tbody .row-hl td { color: var(--brand-green); font-weight: 800; background: rgba(16, 185, 129, 0.04); }
+.fin-table tbody td small { display: block; font-size: 0.72rem; color: var(--text-muted); font-weight: 500; margin-top: 1px; }
+.fin-note { font-size: 0.82rem; color: var(--text-muted); margin-top: 16px; font-style: italic; font-weight: 500; }
+.fin-growth-band { background: var(--bg-card); border-radius: 14px; padding: 28px 36px; margin-top: 24px; display: flex; flex-wrap: wrap; gap: 32px; align-items: center; border: 1px solid var(--border-light); box-shadow: var(--shadow-sm); }
+.fin-growth-item .val { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 2rem; color: var(--brand-green); }
+.fin-growth-item .lbl { font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; font-weight: 600; }
+
+/* ── ROADMAP ── */
+.roadmap-bg { background: var(--bg-card); }
+.timeline-row { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 48px; border: 1px solid var(--border-light); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-md); }
+.timeline-cell { padding: 30px 24px; border-right: 1px solid var(--border-light); }
+.timeline-cell:last-child { border-right: none; }
+.timeline-cell:nth-child(odd) { background: var(--bg-main); }
+.timeline-cell:nth-child(even) { background: var(--bg-card); }
+.t-label { font-size: 0.7rem; font-weight: 800; letter-spacing: 0.12em; color: var(--brand-green); text-transform: uppercase; margin-bottom: 8px; }
+.t-title { font-family: 'Montserrat', sans-serif; font-size: 0.95rem; font-weight: 800; color: var(--text-main); margin-bottom: 14px; }
+.t-items { display: flex; flex-direction: column; gap: 8px; }
+.t-item { font-size: 0.82rem; color: var(--text-mid); line-height: 1.5; padding-left: 14px; position: relative; }
+.t-item::before { content: '→'; position: absolute; left: 0; color: var(--brand-glow); font-size: 0.8rem; }
+.phase-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 24px; }
+.phase-card { border-radius: 14px; padding: 28px; box-shadow: var(--shadow-sm); }
+.phase-card.p1 { background: var(--bg-soft); border: 1px solid var(--border-medium); }
+.phase-card.p2 { background: var(--bg-card); border: 1px solid var(--border-light); }
+.phase-card.p3 { background: var(--bg-main); border: 1px solid var(--border-light); }
+.phase-num { font-family: 'Montserrat', sans-serif; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 8px; }
+.phase-card.p1 .phase-num { color: var(--brand-green); }
+.phase-card.p2 .phase-num { color: var(--brand-green); }
+.phase-card.p3 .phase-num { color: var(--brand-green); }
+.phase-card h4 { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 1.1rem; margin-bottom: 14px; color: var(--text-main); }
+.phase-detail { font-size: 0.85rem; line-height: 1.65; color: var(--text-mid); }
+.phase-detail strong { display: block; margin-bottom: 3px; color: var(--text-main); }
+.phase-status { display: inline-block; margin-top: 14px; font-size: 0.72rem; font-weight: 800; padding: 4px 12px; border-radius: 100px; }
+.phase-card.p1 .phase-status { background: var(--text-main); color: #ffffff; }
+.phase-card.p2 .phase-status { background: rgba(10, 37, 18, 0.05); color: var(--brand-green); border: 1px solid var(--border-light); }
+.phase-card.p3 .phase-status { background: rgba(16, 185, 129, 0.15); color: var(--brand-green); }
+
+/* ── INVESTMENT ── */
+.invest-bg { background: var(--bg-soft); }
+.invest-hero { text-align: center; margin-bottom: 52px; }
+.invest-amount { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: clamp(3rem, 8vw, 5.5rem); color: var(--text-main); line-height: 1; letter-spacing: -0.03em; }
+.invest-sub { font-size: 1.05rem; color: var(--text-mid); margin-top: 10px; font-weight: 600; }
+.invest-use { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 36px; }
+.invest-use-item { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 12px; padding: 20px 14px; text-align: center; box-shadow: var(--shadow-sm); }
+.invest-use-item .pct { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 1.6rem; color: var(--brand-green); }
+.invest-use-item .use-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; line-height: 1.4; font-weight: 600; }
+.invest-farm-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; background: var(--border-light); border-radius: 14px; overflow: hidden; margin-top: 24px; border: 1px solid var(--border-light); box-shadow: var(--shadow-md); }
+.invest-farm { background: var(--bg-card); padding: 28px 20px; text-align: center; transition: background 0.2s; }
+.invest-farm:hover { background: rgba(16, 185, 129, 0.02); }
+.invest-farm .year { font-size: 0.72rem; font-weight: 800; color: var(--brand-green); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+.invest-farm .farms { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 1.9rem; color: var(--text-main); line-height: 1; }
+.invest-farm .rev { font-size: 0.82rem; color: var(--text-mid); margin-top: 8px; font-weight: 600; }
+.invest-farm .tagline { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+
+/* ── WHY INVEST ── */
+.why-bg { background: var(--bg-main); }
+.why-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 48px; }
+.why-card { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 14px; padding: 28px; box-shadow: var(--shadow-sm); }
+.why-card h4 { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.05rem; color: var(--text-main); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+.why-card p { font-size: 0.9rem; color: var(--text-mid); line-height: 1.7; }
+.impact-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 24px; }
+.impact-item { background: var(--bg-card); border-radius: 12px; padding: 22px; display: flex; gap: 16px; align-items: flex-start; border: 1px solid var(--border-light); box-shadow: var(--shadow-sm); }
+.impact-item .icon { font-size: 1.4rem; min-width: 28px; }
+.impact-item p { font-size: 0.85rem; color: var(--text-mid); line-height: 1.6; }
+.impact-item strong { color: var(--brand-green); }
+
+/* ── TEAM ── */
+.team-bg { background: var(--bg-card); }
+.team-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 48px; }
+.team-card { background: var(--bg-main); border: 1px solid var(--border-light); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-sm); transition: transform 0.2s; }
+.team-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.team-photo {
+  height: 190px; background: linear-gradient(135deg, var(--bg-soft), #d0dfd3);
+  border-bottom: 2px dashed var(--border-medium); display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 8px; color: var(--brand-green);
+  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-align: center;
+}
+.team-info { padding: 24px; }
+.team-role { font-size: 0.7rem; font-weight: 800; color: var(--brand-green); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+.team-name { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.1rem; color: var(--text-main); margin-bottom: 4px; }
+.team-school { font-size: 0.8rem; color: var(--text-mid); font-style: italic; margin-bottom: 12px; font-weight: 500; }
+.team-bio { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; }
+.advisors { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 32px; }
+.advisor-card { background: var(--bg-main); border: 1px solid var(--border-light); border-radius: 14px; padding: 22px; display: grid; grid-template-columns: 50px 1fr; gap: 14px; align-items: center; box-shadow: var(--shadow-sm); }
+.advisor-photo { width: 50px; height: 50px; border-radius: 50%; background: var(--bg-card); border: 2px solid var(--border-light); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+.advisor-name { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 0.95rem; color: var(--text-main); }
+.advisor-title { font-size: 0.78rem; color: var(--text-muted); line-height: 1.45; font-weight: 500; }
+.recognitions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 40px; align-items: center; }
+.recognition-badge { background: var(--bg-soft); border: 1px solid var(--border-medium); border-radius: 10px; padding: 12px 20px; font-size: 0.85rem; font-weight: 800; color: var(--brand-green); display: flex; align-items: center; gap: 8px; box-shadow: var(--shadow-sm); }
+.collab-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+.collab-item { background: var(--bg-main); border: 1px solid var(--border-light); border-radius: 8px; padding: 10px 18px; font-size: 0.85rem; font-weight: 700; color: var(--text-mid); }
+
+/* ── FOOTER ── */
+footer { background: var(--bg-soft); border-top: 1px solid var(--border-light); }
+.footer-inner { max-width: 1300px; margin: 0 auto; padding: 64px 60px 40px; }
+.footer-top { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; gap: 48px; margin-bottom: 48px; }
+.footer-logo-text { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 1.6rem; color: var(--text-main); margin-bottom: 12px; }
+.footer-logo-text span { color: var(--brand-glow); }
+.footer-tagline { font-size: 0.85rem; color: var(--text-mid); line-height: 1.65; margin-bottom: 16px; }
+.footer-col h5 { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--brand-green); margin-bottom: 16px; }
+.footer-col a { display: block; font-size: 0.85rem; color: var(--text-mid); text-decoration: none; margin-bottom: 10px; transition: color 0.2s; font-weight: 600; }
+.footer-col a:hover { color: var(--brand-glow); }
+.footer-bottom { display: flex; justify-content: space-between; align-items: center; padding-top: 24px; border-top: 1px solid var(--border-light); font-size: 0.78rem; color: var(--text-muted); font-weight: 500; }
+
+/* ── SCROLL ANIM ── */
+.fade-up { opacity: 0; transform: translateY(28px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.fade-up.visible { opacity: 1; transform: translateY(0); }
+
+@media (max-width: 1024px) {
+  nav { padding: 0 24px; }
+  .hero { padding: 110px 24px 60px; }
+  .hero-inner { grid-template-columns: 1fr; gap: 40px; }
+  .section-wrap { padding: 64px 24px; }
+  .problem-inner, .solution-grid, .icp-grid { grid-template-columns: 1fr; }
+  .rev-streams, .success-metrics { grid-template-columns: 1fr 1fr; }
+  .market-bubbles, .phase-row, .team-grid { grid-template-columns: 1fr; }
+  .timeline-row { grid-template-columns: 1fr 1fr; }
+  .invest-use { grid-template-columns: repeat(3, 1fr); }
+  .invest-farm-row { grid-template-columns: 1fr 1fr; }
+  .footer-top { grid-template-columns: 1fr 1fr; }
+  footer .footer-inner { padding: 40px 24px 28px; }
+}
+</style>
 </head>
-<body class="transition-colors duration-300">
+<body>
 
-    <div id="splash-screen" class="fixed inset-0 bg-gradient-to-br from-emerald-900 via-emerald-800 to-emerald-700 flex flex-col items-center justify-center z-50">
-        <div class="flex flex-col items-center text-white">
-            <img src="logo w.png" id="splash-icon" class="w-96 h-96 mb-10" alt="Leafy Logo" onerror="this.src='https://placehold.co/384x384/104332/FFFFFF?text=Leafy+Logo&font=inter'; this.onerror=null;">
-            <div class="flex space-x-1">
-                <span class="text-7xl font-bold letter" style="animation-delay: 0.1s">L</span>
-                <span class="text-7xl font-bold letter" style="animation-delay: 0.2s">E</span>
-                <span class="text-7xl font-bold letter" style="animation-delay: 0.3s">A</span>
-                <span class="text-7xl font-bold letter" style="animation-delay: 0.4s">F</span>
-                <span class="text-7xl font-bold letter" style="animation-delay: 0.5s">Y</span>
-            </div>
-        </div>
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <div>
+      <div class="nav-logo-text">LEAFY<sup>®</sup></div>
+      <div class="nav-logo-sub">IoT & AI based Hydroponic Roof Gardening System</div>
     </div>
+  </a>
+  <div class="nav-links">
+    <a href="#solution">Solution</a>
+    <a href="#market">Market</a>
+    <a href="#traction">Traction</a>
+    <a href="#financials">Financials</a>
+   
+    <a href="#invest" class="nav-cta">Invest in Leafy</a>
+  </div>
+</nav>
 
-    <div id="app-content" class="flex h-screen">
-        <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-20 md:hidden hidden"></div>
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-inner">
+    <div class="hero-left">
+      <div class="hero-tag"><span class="hero-tag-dot"></span>APICTA Award Winner · Dhaka, Bangladesh</div>
+      <p class="hero-eyebrow">IoT + AI · Hydroponic Rooftop Farming</p>
+      <h1 class="hero-h1">Rooftops.<br><span class="lime">Hydroponics.</span><br>Bangladesh.</h1>
+      <p class="hero-sub">An IoT & AI based Hydroponic Roof Gardening System developed for using the <strong>unused rooftops of South Asian Countries</strong> due to heavy Urban Development and Land Shortage.</p>
+      <div class="hero-btns">
+        <a href="#solution" class="btn-lime">Explore the Platform →</a>
+        <a href="#invest" class="btn-ghost">Seed Round: $65k–$100k</a>
+      </div>
+      <div class="hero-award">
+        <div class="hero-award-icon">🏆</div>
+        <div class="hero-award-text">
+          <strong>APICTA 2025 Merit Award</strong>
+          Asia Pacific ICT Alliance · Technology Verified
+        </div>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="hero-img-slot" style="height:100px; padding:0; overflow:hidden;">
+        <img src="openning pic.jpeg" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">
+      </div>
+      <div class="hero-stat-grid">
+        <div class="hero-stat">
+          <div class="hero-stat-val">120<span class="accent">kg</span></div>
+          <div class="hero-stat-label">Harvested & sold in 9 weeks from 16sqft rooftop</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-val"><span class="accent">94%</span></div>
+          <div class="hero-stat-label">Retail acceptance rate on produce</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-val">200<span class="accent">×</span></div>
+          <div class="hero-stat-label">More productive than a field farm per sqft</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-val"><span class="accent">$13.1B</span></div>
+          <div class="hero-stat-label">Total addressable market by 2030</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRACTION BAND -->
+<div class="traction-band">
+  <div class="traction-inner">
+    <div class="traction-item">
+      <div class="traction-val">120 kg</div>
+      <div class="traction-lbl">Lettuce Harvested</div>
+    </div>
+    <div class="traction-item">
+      <div class="traction-val">50+</div>
+      <div class="traction-lbl">Samples to Retailers</div>
+    </div>
+    <div class="traction-item">
+      <div class="traction-val">94%</div>
+      <div class="traction-lbl">Consumer Approval</div>
+    </div>
+    <div class="traction-item">
+      <div class="traction-val">2</div>
+      <div class="traction-lbl">Paying Beta Customers</div>
+    </div>
+    <div class="traction-item">
+      <div class="traction-val">APICTA</div>
+      <div class="traction-lbl">2025 Merit Award</div>
+    </div>
+  </div>
+</div>
+
+<!-- PROBLEM -->
+<div class="problem-bg" id="problem">
+  <div class="section-wrap fade-up">
+    <p class="section-label section-label-dark">01 // The Problem + Opportunity</p>
+    <h2 class="section-h2 section-h2-light">Receding Urban Harvest Land<br>and <span class="lime">Unused Rooftop Space</span></h2>
+    <p class="section-desc section-desc-light">Bangladesh loses arable land, faces pesticide contamination, and suffers massive post-harvest losses — all while millions of rooftops sit empty.</p>
+    <div class="problem-inner">
+      <div class="problem-img-slot"style="background: var(--bg-soft);">
+        <img src="ROOFTOP PIC.png" style="width:100%;height:50%;object-fit:cover;border-radius:14px;">
+      </div>
+      <div>
+        <div class="problem-cards">
+          <div class="problem-card">
+            <div class="problem-card-icon">📉</div>
+            <div>
+              <h4>Declined Affordability</h4>
+              <p>Vegetable production needs to increase 3× to meet current demand. Food price inflation peaked at 9.94% in 2023, eroding household purchasing power.</p>
+            </div>
+          </div>
+          <div class="problem-card">
+            <div class="problem-card-icon">🌍</div>
+            <div>
+              <h4>Arable Land Loss</h4>
+              <p>Bangladesh has lost 2 million hectares of arable land over 22 years and is still losing 69,000 hectares every year to urbanisation.</p>
+            </div>
+          </div>
+          <div class="problem-card">
+            <div class="problem-card-icon">☠️</div>
+            <div>
+              <h4>Pesticide Misuse</h4>
+              <p>Excessive pesticide use has caused 1.47 million hectares of land to lose 75% of productivity. 40% of washed vegetables still carry residue.</p>
+            </div>
+          </div>
+          <div class="problem-card">
+            <div class="problem-card-icon">💧</div>
+            <div>
+              <h4>Water Scarcity</h4>
+              <p>Demand for fresh water will exceed supply in dry seasons by 2030. Fast-depleting aquifers signal a looming crisis.</p>
+            </div>
+          </div>
+          <div class="problem-card">
+            <div class="problem-card-icon">📦</div>
+            <div>
+              <h4>Fluctuating Wholesale Price</h4>
+              <p>The 6-tier supply chain (farmer → faria → bepari → aratdar → retailer → consumer) inflates prices, degrades freshness and causes 23–44% post-harvest losses.</p>
+            </div>
+          </div>
+        </div>
+        <div class="problem-solutions">
+          <div class="solution-pill">
+            <div class="val">200×</div>
+            <div class="lbl">More productive as a field farm per sqft</div>
+          </div>
+          <div class="solution-pill">
+            <div class="val">0.4%</div>
+            <div class="lbl">Land footprint vs. conventional field farming</div>
+          </div>
+          <div class="solution-pill">
+            <div class="val">90%</div>
+            <div class="lbl">Less water than regular field farmers</div>
+          </div>
+          <div class="solution-pill">
+            <div class="val">Zero</div>
+            <div class="lbl">Pesticides — grown in a closed NFT system</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SOLUTION -->
+<div id="solution">
+  <div class="section-wrap fade-up">
+    <p class="section-label">02 // The Big Idea</p>
+    <h2 class="section-h2">Rooftops → <span class="lime">Hydroponic Gardens</span></h2>
+    <p class="section-desc">An IoT & AI based Hydroponic Roof Gardening System. Leafy Farm → Wholesaler / Retailer — cutting down multiple tiers of middlemen, reducing transport cost and increasing shelf life to freshness.</p>
+    <div class="solution-grid">
+      <div>
+        <div class="solution-img-slot"style="background: var(--bg-card);">
+          
+           <img src="Pasted image.png" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">
+        </div>
+        <div style="background:var(--bg-soft);border:1px solid var(--border-medium);border-radius:12px;padding:20px 22px;margin-top:16px">
+          <p style="font-size:0.88rem;color:var(--text-mid);line-height:1.7">Filtered nutrient solution pumped from central reservoir with constant EC/PH → distributed through feed tubes to root zone film → Leafy greens absorb precise nutrients → excess solution drains back and is reused.</p>
+        </div>
+      </div>
+      <div class="config-list">
+        <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:6px;font-weight:700">THREE CONFIGURATIONS — One Platform</p>
+        <div class="config-card">
+          <div class="config-card-top">
+            <h4>🏢 Leafy Indoor Farms</h4>
+            <span class="config-badge">FULLY CONTROLLED</span>
+          </div>
+          <p>Fully controlled environment, any crop variety. Highest year-round yields regardless of season.</p>
+          <div class="yield">↑ 10–35 kg/sqft capacity</div>
+        </div>
+        <div class="config-card">
+          <div class="config-card-top">
+            <h4>🏠 Outdoor Rooftop Farm</h4>
+            <span class="config-badge">SEMI-CONTROLLED</span>
+          </div>
+          <p>Semi-controlled seasonal farming. Lower capex entry point — strong returns for rooftop owners.</p>
+          <div class="yield">↑ 7–22 kg/sqft capacity</div>
+        </div>
+        <div class="config-card">
+          <div class="config-card-top">
+            <h4>🪴 Leafy Pod</h4>
+            <span class="config-badge">MODULAR / APARTMENT</span>
+          </div>
+          <p>Modular apartment-scale seasonal crops. Entry-level unit for urban households.</p>
+          <div class="yield">↑ 7–22 kg/sqft capacity</div>
+        </div>
+        <div class="platform-box">
+          <p>All configurations managed via <strong>Leafy Growtune AI Agent</strong> — real-time EC/pH dosing, irrigation, nutrient delivery, cloud dashboard, production planning & demand-driven harvesting. <strong>Zero farming knowledge required.</strong></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- COMPARISON -->
+<div class="compare-bg">
+  <div class="section-wrap fade-up">
+    <p class="section-label">03 // Proof of Concept</p>
+    <h2 class="section-h2">Unrivalled Sustainability <span class="lime">&amp; Productivity</span></h2>
+    <p class="section-desc">Leafy benchmarked against regular vertical farms in Bangladesh and traditional field farms across five key dimensions.</p>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th class="col-label">Performance Pillar</th>
+          <th class="col-leafy">🌿 Leafy</th>
+          <th class="col-other">Regular Vertical Farms (BD)</th>
+          <th class="col-other">Traditional Farms</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="row-label">🌾 Crop Turns / year</td>
+          <td class="cell-leafy">Up to <strong>17</strong> — FASTER</td>
+          <td class="cell-other">13</td>
+          <td class="cell-other">10</td>
+        </tr>
+        <tr>
+          <td class="row-label">📈 Yield vs field farm</td>
+          <td class="cell-leafy">Up to <strong>200×</strong> — HIGHER</td>
+          <td class="cell-other">18×</td>
+          <td class="cell-other">1×</td>
+        </tr>
+        <tr>
+          <td class="row-label">💰 Long-term cost structure</td>
+          <td class="cell-leafy"><strong>Cheap &amp; Declining</strong></td>
+          <td class="cell-other">Expensive</td>
+          <td class="cell-other">Becoming Expensive</td>
+        </tr>
+        <tr>
+          <td class="row-label">🥬 Product Quality</td>
+          <td class="cell-leafy"><strong>Most Consistent</strong> — BETTER</td>
+          <td class="cell-other">Somewhat Consistent</td>
+          <td class="cell-other">Least Consistent</td>
+        </tr>
+        <tr>
+          <td class="row-label">⚙️ Production Efficiency</td>
+          <td class="cell-leafy"><strong>Optimised</strong> Production Line</td>
+          <td class="cell-other"><span class="check-no">✗</span> Not Optimised</td>
+          <td class="cell-other"><span class="check-no">✗</span> Not Optimised</td>
+        </tr>
+        <tr>
+          <td class="row-label">💧 Water Usage</td>
+          <td class="cell-leafy"><strong>90% less</strong> than conventional</td>
+          <td class="cell-other">Moderate reduction</td>
+          <td class="cell-other">High usage</td>
+        </tr>
+        <tr>
+          <td class="row-label">🌿 Pesticide Use</td>
+          <td class="cell-leafy"><span class="check-yes">✓</span> <strong>Zero</strong></td>
+          <td class="cell-other">Low</td>
+          <td class="cell-other">High (88M+ lbs/yr)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- USP -->
+<div class="usp-bg">
+  <div class="section-wrap fade-up">
+    <p class="section-label section-label-dark">04 // Differentiation & USP</p>
+    <h2 class="section-h2 section-h2-light">Four Innovations — <span class="lime">No Direct Competitor</span> in Bangladesh</h2>
+    <p class="section-desc section-desc-light">Leafy combines rooftop-native hydroponic infrastructure with a full-stack AI platform — a category that does not yet exist in the country.</p>
+    <div class="usp-grid">
+      <div class="usp-item">
+        <div class="usp-num">01</div>
+        <h3>AI-Powered Autonomous Control</h3>
+        <p>AI-powered automated rooftop hydroponics with minimum human control. Full monitoring data sent to a web dashboard for real-time management — controllable from any device, anywhere.</p>
+      </div>
+      <div class="usp-item">
+        <div class="usp-num">02</div>
+        <h3>Proprietary IoT Controller Box</h3>
+        <p>Entirely Leafy R&D. Automates real-time EC/pH dosing, irrigation, and nutrient delivery with zero manual intervention. Field-tested across Dhaka rooftops. Every competitor in Bangladesh requires horticultural expertise.</p>
+      </div>
+      <div class="usp-item">
+        <div class="usp-num">03</div>
+        <h3>Multi-Configuration Farm System</h3>
+        <p>Three hardware formats — Indoor Farms (any crop, fully controlled), Outdoor Rooftop (semi-controlled, seasonal), and Pod (apartment-scale) — all run from one platform. Competitors offer only one format.</p>
+      </div>
+      <div class="usp-item">
+        <div class="usp-num">04</div>
+        <h3>Distributed Rooftop-as-a-Platform</h3>
+        <p>Rather than expensive centralised facilities, Leafy turns private rooftops into a distributed, scalable farming network — unlocking 180,000+ potential farm units in Dhaka alone at a fraction of conventional vertical farm capex.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MARKET -->
+<div class="market-bg" id="market">
+  <div class="section-wrap fade-up">
+    <p class="section-label section-label-dark">05 // The Market Size</p>
+    <h2 class="section-h2 section-h2-light">A <span class="lime">$13.1B Market</span> — Starting With Dhaka</h2>
+    <p class="section-desc section-desc-light">Leafy enters at ground zero with a first-mover advantage across South Asia, targeting a $1.3T market by 2030.</p>
+    <div class="market-bubbles">
+      <div class="market-tier tam">
+        <div class="tier-label">TAM — Total Addressable Market</div>
+        <div class="tier-usd">$13.1B</div>
+        <div class="tier-bdt">BDT 1.57 Trillion</div>
+        <div class="tier-desc">Consumption of leafy greens, cabbage &amp; tomato across Bangladesh</div>
+        <div class="tier-pop">👥 168 million population (domestic)</div>
+      </div>
+      <div class="market-tier sam">
+        <div class="tier-label">SAM — Serviceable Available Market</div>
+        <div class="tier-usd">$5.88B</div>
+        <div class="tier-bdt">BDT 705 Billion</div>
+        <div class="tier-desc">Consumption of leafy greens, cabbage &amp; tomato in Dhaka Metro only</div>
+        <div class="tier-pop">👥 22 million in Dhaka Metro</div>
+      </div>
+      <div class="market-tier som">
+        <div class="tier-label">SOM — Serviceable Obtainable Market</div>
+        <div class="tier-usd">$770M</div>
+        <div class="tier-bdt">BDT 92.4 Billion</div>
+        <div class="tier-desc">Dhaka metro middle class &amp; above — Leafy's immediate target segment</div>
+        <div class="tier-pop">👥 ~9 million target consumers</div>
+      </div>
+    </div>
+    <div class="market-callout">
+      <p>The global urban farming market is projected to grow at a <strong>CAGR of 25–30%</strong>, approaching <strong>$1.3 trillion by 2030</strong>. Dhaka alone has <strong>180,000+ underutilized rooftops</strong> — $750K unlocks 180,000+ potential farms with proven unit economics already validated in pilot.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ICP -->
+<div>
+  <div class="section-wrap fade-up">
+    <p class="section-label">06 // Target Consumer Analysis</p>
+    <h2 class="section-h2">Two Primary <span class="lime">Operator Profiles</span></h2>
+    <div class="icp-grid">
+      <div class="icp-card">
+        <div class="icp-head">
+          <div class="icp-photo">👩</div>
+          <div>
+            <div class="icp-tag">TheHousewife</div>
+            <div class="icp-name">Shaira Zaman</div>
+            <div class="icp-meta">35 Y.O &nbsp;📍 Dhaka</div>
+          </div>
+        </div>
+        <div class="icp-body">
+          <p>Full time housewife with children. Spends a large chunk of her day taking care of family and household affairs. She usually has short chunks of free time but not big enough to pursue a side hustle.</p>
+          <p style="font-size:0.82rem;font-weight:700;color:var(--brand-green);margin-bottom:8px">Pain Points</p>
+          <div class="pain-list">
+            <div class="pain-item">Stressed about the rising cost of essential commodities</div>
+            <div class="pain-item">Wants to contribute financially to the family but doesn't have the time or energy</div>
+            <div class="pain-item">Sometimes suffers from mild identity crisis due to not holding any job</div>
+          </div>
+        </div>
+      </div>
+      <div class="icp-card">
+        <div class="icp-head">
+          <div class="icp-photo">👨‍💼</div>
+          <div>
+            <div class="icp-tag">TheHustler</div>
+            <div class="icp-name">Tanvir Rahman</div>
+            <div class="icp-meta">28 Y.O &nbsp;📍 Dhaka</div>
+          </div>
+        </div>
+        <div class="icp-body">
+          <p>Young adult living with his parents. Has a low income, around $150/month. Living expenses are covered by his parents. Has a bachelor's degree. Passionate but not very strategic. Has successful friends.</p>
+          <p style="font-size:0.82rem;font-weight:700;color:var(--brand-green);margin-bottom:8px">Pain Points</p>
+          <div class="pain-list">
+            <div class="pain-item">Not academically sound or skilled enough to have a decent career</div>
+            <div class="pain-item">Does not have skills to start and run a business</div>
+            <div class="pain-item">Low social status fuelled by lack of personal income / inferiority complex</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS / TRACTION -->
+<div class="success-bg" id="traction">
+  <div class="section-wrap fade-up">
+    <p class="section-label section-label-dark">07 // Success Story & Traction</p>
+    <h2 class="section-h2 section-h2-light">Live Pilot. <span class="lime">Real Results.</span></h2>
+    <div class="success-metrics">
+      <div class="success-card">
+        <div class="success-val">120 kg</div>
+        <div class="success-lbl">Lettuce harvested &amp; sold to retailers</div>
+      </div>
+      <div class="success-card">
+        <div class="success-val">94%</div>
+        <div class="success-lbl">Retail acceptance rate on produce</div>
+      </div>
+      <div class="success-card">
+        <div class="success-val">50+</div>
+        <div class="success-lbl">Samples sent to consumers &amp; retailers for taste marketing</div>
+      </div>
+      <div class="success-card">
+        <div class="success-val">2</div>
+        <div class="success-lbl">Paying beta customers onboarded</div>
+      </div>
+    </div>
+    <div class="success-story">
+      <p>Started with a single <strong>16 sqft rooftop prototype</strong> in Dhaka. Grew to harvesting &amp; delivering fresh lettuce to retailers within first <strong>6 months</strong>. Proved that urban households can run profitable farms with minimal effort — and <strong>94% of consumers said our products are fresher &amp; better tasting</strong> than market alternatives.</p>
+    </div>
+    <div class="img-gallery">
+      <div class="gallery-slot"style="height:236px; padding:0; overflow:hidden;">
+      <img src="1.jpeg" style="width:100%; height:100%; object-fit:cover; border-radius:10px;">
+</div>
+      <div class="gallery-slot"style="height:236px; padding:0; overflow:hidden;"><img src="2.jpeg" style="width:100%; height:100%; object-fit:cover; border-radius:10px;"></div>
+      <div class="gallery-slot"style="height:236px; padding:0; overflow:hidden;">
+      <img src="3.jpeg" style="width:100%; height:100%; object-fit:cover; border-radius:10px;">
+      </div>
+      <div class="gallery-slot"style="height:236px; padding:0; overflow:hidden;"><img src="4.jpeg" style="width:100%; height:100%; object-fit:cover; border-radius:10px;"></div>
+    
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px">
+      <div style="background:var(--bg-card);border:1px solid var(--border-medium);border-radius:12px;padding:22px;text-align:center;box-shadow:var(--shadow-sm)">
+        <div style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:2.2rem;color:var(--brand-green)">585K Ton</div>
+        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:6px;font-weight:600">CO₂ emissions saved by 2030</div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--border-medium);border-radius:12px;padding:22px;text-align:center;box-shadow:var(--shadow-sm)">
+        <div style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:2.2rem;color:var(--brand-green)">163K</div>
+        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:6px;font-weight:600">Active rooftop farms by 2030</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REVENUE MODEL -->
+<div class="rev-bg">
+  <div class="section-wrap fade-up">
+    <p class="section-label">08 // Revenue Model</p>
+    <h2 class="section-h2">Four Revenue Streams —<br><span class="lime">$313 Monthly Revenue per Farm</span></h2>
+    <p class="section-desc">The farmer earns more than Leafy — aligning incentives for rapid adoption and long-term retention.</p>
+    <div class="rev-streams">
+      <div class="rev-card">
+        <h4>% Produce Commission</h4>
+        <div class="mechanism">25% of monthly farm sales — primary revenue driver scaling with farmer success</div>
+        <div class="rev-usd"><sup>$</sup>195</div>
+        <div class="rev-bdt">BDT ~22,400/farm/month</div>
+      </div>
+      <div class="rev-card">
+        <h4>☁️ SaaS Subscription</h4>
+        <div class="mechanism">Flat monthly fee for Growtune farm management software and cloud dashboard access</div>
+        <div class="rev-usd"><sup>$</sup>59</div>
+        <div class="rev-bdt">BDT ~6,800/farm/month</div>
+      </div>
+      <div class="rev-card">
+        <h4>🛒 Supplies Markup</h4>
+        <div class="mechanism">7.5% of monthly sales on seeds, nutrients, and growing supplies sold through Leafy Shop</div>
+        <div class="rev-usd"><sup>$</sup>59</div>
+        <div class="rev-bdt">BDT ~6,800/farm/month</div>
+      </div>
+      <div class="rev-card">
+        <h4>🔧 Setup Service Fee</h4>
+        <div class="mechanism">7.5% of one-time setup cost — professional installation and farm configuration</div>
+        <div class="rev-usd"><sup>$</sup>25–85</div>
+        <div class="rev-bdt">BDT ~2,900–9,800 one-time</div>
+      </div>
+    </div>
+    <div class="rev-total-band">
+      <div class="rev-total-item">
+        <div class="val">$<span>313</span></div>
+        <div class="lbl">Total Leafy revenue / farm / month</div>
+      </div>
+      <div class="rev-total-item">
+        <div class="val">$<span>781</span></div>
+        <div class="lbl">Avg monthly farm sales (blended)</div>
+      </div>
+      <div class="rev-total-item">
+        <div class="val">$<span>391</span></div>
+        <div class="lbl">Farmer net income / farm / month</div>
+      </div>
+    </div>
+    <p style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:0.88rem;color:var(--text-main);margin:28px 0 14px;text-transform:uppercase;letter-spacing:0.06em">Farmer Net Income by Farm Size</p>
+    <div class="farmer-incomes">
+      <div class="farmer-income-card">
+        <div class="val">$142</div>
+        <div class="size">Micro Farm (12 sqft) / month</div>
+        <div class="bdt">BDT ~16,300</div>
+      </div>
+      <div class="farmer-income-card">
+        <div class="val">$187</div>
+        <div class="size">Rooftop Farm (36 sqft) / month</div>
+        <div class="bdt">BDT ~21,500</div>
+      </div>
+      <div class="farmer-income-card">
+        <div class="val">$1,244</div>
+        <div class="size">Tower Farm (100 sqft) / month</div>
+        <div class="bdt">BDT ~143,100</div>
+      </div>
+    </div>
+    <div class="key-insight"><strong>Key insight:</strong> The farmer earns more than Leafy — aligning incentives for rapid adoption and long-term retention.</div>
+  </div>
+</div>
+
+<!-- FINANCIALS -->
+<div class="fin-bg" id="financials">
+  <div class="section-wrap fade-up">
+    <p class="section-label">09 // Financial Projections</p>
+    <h2 class="section-h2">$764.6k (Y1) → <span class="lime">$239.1M (Y4)</span></h2>
+    <p class="section-desc" style="margin-bottom:32px">91.5% gross margin sustained. 31,200% revenue growth Y1–Y4. Capital-efficient and recession-proof.</p>
+    <div class="fin-kpis">
+      <div class="fin-kpi">
+        <div class="val">$46.4M</div>
+        <div class="lbl">NPV (10-year, 25% discount rate)<br><span style="color:var(--brand-green);font-weight:700">BDT ~5.3 Billion</span></div>
+      </div>
+      <div class="fin-kpi">
+        <div class="val">112%</div>
+        <div class="lbl">Internal Rate of Return (5-year)</div>
+      </div>
+      <div class="fin-kpi">
+        <div class="val">1.65 yrs</div>
+        <div class="lbl">Payback period</div>
+      </div>
+      <div class="fin-kpi">
+        <div class="val">91.5%</div>
+        <div class="lbl">Gross margin (sustained)</div>
+      </div>
+      <div class="fin-kpi">
+        <div class="val">$91.9M</div>
+        <div class="lbl">Y4 EBITDA<br><span style="color:var(--brand-green);font-weight:700">BDT ~10.6B</span></div>
+      </div>
+    </div>
+    <table class="fin-table">
+      <thead>
+        <tr>
+          <th>Metric (USD M / BDT M)</th>
+          <th>Y1</th><th>Y2</th><th>Y3</th><th>Y4</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Active Farms</td>
+          <td>520</td><td>3,020</td><td>13,020</td><td>163,020</td>
+        </tr>
+        <tr class="row-hl">
+          <td>Revenue</td>
+          <td>$0.76M<small>BDT 87.6M</small></td>
+          <td>$4.4M<small>BDT 506M</small></td>
+          <td>$18.7M<small>BDT 2,150M</small></td>
+          <td>$239.1M<small>BDT 27,500M</small></td>
+        </tr>
+        <tr>
+          <td>Gross Profit (91.5%)</td>
+          <td>$0.70M<small>BDT 80.5M</small></td>
+          <td>$4.0M<small>BDT 463M</small></td>
+          <td>$17.1M<small>BDT 1,967M</small></td>
+          <td>$218.8M<small>BDT 25,162M</small></td>
+        </tr>
+        <tr>
+          <td>EBITDA</td>
+          <td>$0.29M<small>BDT 33.4M</small></td>
+          <td>$1.7M<small>BDT 195M</small></td>
+          <td>$7.2M<small>BDT 828M</small></td>
+          <td>$91.9M<small>BDT 10,569M</small></td>
+        </tr>
+        <tr class="row-hl">
+          <td>Net Income</td>
+          <td>$0.20M<small>BDT 23M</small></td>
+          <td>$1.2M<small>BDT 138M</small></td>
+          <td>$5.2M<small>BDT 598M</small></td>
+          <td>$67M<small>BDT 7,705M</small></td>
+        </tr>
+        <tr>
+          <td>Gross Margin</td>
+          <td>91.5%</td><td>91.5%</td><td>91.5%</td><td>91.5%</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="fin-note">Exchange rate: ~115 BDT = $1 USD. Key assumptions: blended avg monthly sales $781/farm; Leafy commission $195 (25%); SaaS fee $59/month; supplies markup $59 (7.5%); WACC 25%; terminal growth 4%; tax rate 25%.</p>
+    <div class="fin-growth-band">
+      <div class="fin-growth-item"><div class="val">31,200%</div><div class="lbl">Revenue growth Y1 → Y4</div></div>
+      <div class="fin-growth-item"><div class="val">0.09%</div><div class="lbl">Market penetration by Y4</div></div>
+      <div class="fin-growth-item"><div class="val">163K</div><div class="lbl">Active farms by Y4</div></div>
+      <div class="fin-growth-item"><div class="val">$1.3T</div><div class="lbl">Global urban farming market by 2030</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- THREE-PHASE ROLLOUT -->
+<div class="roadmap-bg">
+  <div class="section-wrap fade-up">
+    <p class="section-label">10 // Go-to-Market Plan</p>
+    <h2 class="section-h2">Three-Phase Rollout — <span class="lime">Stack Farms to Full B2B Commerce</span></h2>
+    <div class="phase-row">
+      <div class="phase-card p1">
+        <div class="phase-num">Phase 1 — Current</div>
+        <h4>Stack Farms + Software</h4>
+        <div class="phase-detail">
+          <strong>Product:</strong> 100 sqft Stack Farms<br>
+          <strong>Crops:</strong> Leafy Greens &amp; Cabbages<br>
+          <strong>Software:</strong> Leafy Growtune V1.0<br>
+          <strong>Revenue:</strong> Setup fees + SaaS + Commission<br>
+          <strong>Target:</strong> 520 farms by Y1 end
+        </div>
+        <span class="phase-status">🟢 Live Pilot Operational</span>
+      </div>
+      <div class="phase-card p2">
+        <div class="phase-num">Phase 2 — Mid 2026</div>
+        <h4>Tower &amp; Micro Farms + Shop</h4>
+        <div class="phase-detail">
+          <strong>Product:</strong> 100 sqft Tower + 12–36 sqft Micro<br>
+          <strong>Crops:</strong> Expanded leafy greens range<br>
+          <strong>Software:</strong> Growtune + Leafy Shop<br>
+          <strong>Revenue:</strong> + Supplies markup revenue<br>
+          <strong>Target:</strong> 3,020 farms by Y2
+        </div>
+        <span class="phase-status">Planned</span>
+      </div>
+      <div class="phase-card p3">
+        <div class="phase-num">Phase 3 — Future</div>
+        <h4>AI Vision + B2B Commerce</h4>
+        <div class="phase-detail">
+          <strong>Product:</strong> Leafy Vision AI + Full platform<br>
+          <strong>Crops:</strong> Fruits, Vegetables, Microgreens<br>
+          <strong>Software:</strong> Full B2B Commerce Suite<br>
+          <strong>Revenue:</strong> All 4 streams at scale<br>
+          <strong>Target:</strong> 163,020 farms by Y4
+        </div>
+        <span class="phase-status">Future</span>
+      </div>
+    </div>
+    <p style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:0.88rem;color:var(--text-main);margin:36px 0 16px;text-transform:uppercase;letter-spacing:0.06em">Year 1 Quarterly Roadmap</p>
+    <div class="timeline-row">
+      <div class="timeline-cell">
+        <div class="t-label">Q1 — Foundation</div>
+        <div class="t-title">Productise &amp; Deploy</div>
+        <div class="t-items">
+          <div class="t-item">Productise Growtune V1</div>
+          <div class="t-item">Deploy 50 rooftop NFT farms</div>
+          <div class="t-item">Company registration complete</div>
+          <div class="t-item">Prove unit economics with paying customers</div>
+        </div>
+      </div>
+      <div class="timeline-cell">
+        <div class="t-label">Q2 — Supply + B2B</div>
+        <div class="t-title">Commerce &amp; Automation</div>
+        <div class="t-items">
+          <div class="t-item">Launch Leafy Shop B2B</div>
+          <div class="t-item">Tower farm config live</div>
+          <div class="t-item">On-demand harvest automation</div>
+          <div class="t-item">Demand forecast beta · 300 farms</div>
+        </div>
+      </div>
+      <div class="timeline-cell">
+        <div class="t-label">Q3 — AI + Routing</div>
+        <div class="t-title">Intelligence Layer</div>
+        <div class="t-items">
+          <div class="t-item">Leafy Vision AI plant health</div>
+          <div class="t-item">Smart delivery routing</div>
+          <div class="t-item">Micro farm launched</div>
+          <div class="t-item">Influencer + SEO · 1,000 farms</div>
+        </div>
+      </div>
+      <div class="timeline-cell">
+        <div class="t-label">Q4 — Scale + Finance</div>
+        <div class="t-title">Platform Maturity</div>
+        <div class="t-items">
+          <div class="t-item">Automated demand forecast</div>
+          <div class="t-item">Rooftop pod config + EMI</div>
+          <div class="t-item">Loyalty programme</div>
+          <div class="t-item">520 farms (Y1) · runway to 3,020 (Y2)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- INVESTMENT -->
+<div class="invest-bg" id="invest">
+  <div class="section-wrap fade-up">
+    <p class="section-label section-label-dark">11 // Seed Round</p>
+    <div class="invest-hero">
+      <div class="invest-amount">$65k–$100k</div>
+      <div class="invest-sub">Seed Round · BDT ~7.5M–11.5M &nbsp;·&nbsp; Unlocks 520 farms in Year 1</div>
+    </div>
+    <div class="invest-use">
+      <div class="invest-use-item"><div class="pct">35%</div><div class="use-label">COGS — Hardware, nutrients, supplies</div></div>
+      <div class="invest-use-item"><div class="pct">20%</div><div class="use-label">Sales &amp; Marketing — Farmer acquisition, brand</div></div>
+      <div class="invest-use-item"><div class="pct">20%</div><div class="use-label">Delivery &amp; Logistics — Cold chain, transport</div></div>
+      <div class="invest-use-item"><div class="pct">15%</div><div class="use-label">R&amp;D — IoT box refinement, AI training</div></div>
+      <div class="invest-use-item"><div class="pct">10%</div><div class="use-label">G&amp;A — Operations, legal, admin</div></div>
+    </div>
+    <div class="invest-farm-row">
+      <div class="invest-farm">
+        <div class="year">Y1</div>
+        <div class="farms">520</div>
+        <div class="rev">Revenue: $763k &nbsp;|&nbsp; BDT 87.6M</div>
+        <div class="tagline">Positive unit economics</div>
+      </div>
+      <div class="invest-farm">
+        <div class="year">Y2</div>
+        <div class="farms">3,020</div>
+        <div class="rev">Revenue: $4.4M &nbsp;|&nbsp; BDT 506M</div>
+        <div class="tagline">Tower &amp; Micro launch</div>
+      </div>
+      <div class="invest-farm">
+        <div class="year">Y3</div>
+        <div class="farms">13,020</div>
+        <div class="rev">Revenue: $18.7M &nbsp;|&nbsp; BDT 2.15B</div>
+        <div class="tagline">B2B commerce launch</div>
+      </div>
+      <div class="invest-farm">
+        <div class="year">Y4</div>
+        <div class="farms">163,020</div>
+        <div class="rev">Revenue: $239.1M &nbsp;|&nbsp; BDT 27.5B</div>
+        <div class="tagline">Full platform maturity</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WHY INVEST + IMPACT -->
+<div class="why-bg">
+  <div class="section-wrap fade-up">
+    <p class="section-label">12 // Why Invest in Leafy</p>
+    <h2 class="section-h2">First-Mover. Capital-Efficient. <span class="lime">Recession-Proof.</span></h2>
+    <div class="why-grid">
+      <div class="why-card">
+        <h4>🌏 $1.3T Market by 2030</h4>
+        <p>Leafy enters at ground zero with a first-mover advantage across South Asia — the world's most densely populated region, ready to franchise globally.</p>
+      </div>
+      <div class="why-card">
+        <h4>🛡️ Recession Proof</h4>
+        <p>AI-driven hydroponics removes weather, season &amp; supply chain dependency entirely. Demand for food is inelastic — Leafy's model is designed for stability in any economic environment.</p>
+      </div>
+      <div class="why-card">
+        <h4>💰 Capital Efficient</h4>
+        <p>$750K unlocks 180,000+ potential farms in Dhaka alone with proven unit economics. No expensive centralised infrastructure — distributed rooftop model keeps capex minimal.</p>
+      </div>
+      <div class="why-card">
+        <h4>🔁 Low-Risk, High Replication</h4>
+        <p>Proven in one of the world's most densely populated cities. The model is plug-and-play, ready to franchise across South Asia — India, Pakistan, Sri Lanka.</p>
+      </div>
+    </div>
+    <p style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:0.85rem;color:var(--text-main);margin:36px 0 14px;text-transform:uppercase;letter-spacing:0.06em">Social &amp; Environmental Impact</p>
+    <div class="impact-grid">
+      <div class="impact-item">
+        <div class="icon">💧</div>
+        <p><strong>90% less water</strong> used &amp; zero pesticides — no soil or water contamination</p>
+      </div>
+      <div class="impact-item">
+        <div class="icon">💵</div>
+        <p>Creates <strong>income for housewives, retirees &amp; young urban entrepreneurs</strong></p>
+      </div>
+      <div class="impact-item">
+        <div class="icon">🥦</div>
+        <p><strong>35% cheaper produce</strong> improving food access for lower-middle class urban families</p>
+      </div>
+      <div class="impact-item">
+        <div class="icon">🌍</div>
+        <p><strong>0.4% land footprint</strong> cutting food-miles, emissions &amp; supply chain waste. Aligned with UN SDGs 2, 6, 12, 13.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div>
+        <div class="footer-logo-text">LEAFY<span>®</span></div>
+        <p class="footer-tagline">An IoT & AI based Hydroponic Roof Gardening System developed for using the unused rooftops of South Asian Countries due to heavy Urban Development and Land Shortage.</p>
+        <p style="font-size:0.76rem;color:var(--text-muted)">Dhaka, Bangladesh · APICTA 2025 Merit Award</p>
+      </div>
+      <div class="footer-col">
+        <h5>Platform</h5>
+        <a href="#solution">Solution</a>
+        <a href="#solution">Leafy Indoor</a>
+        <a href="#solution">Outdoor Rooftop</a>
+        <a href="#solution">Leafy Pod</a>
+        <a href="#">Growtune Dashboard</a>
+      </div>
+      <div class="footer-col">
+        <h5>Company</h5>
+        <a href="#">About Leafy</a>
         
-        <aside id="sidebar" class="w-64 bg-gradient-to-b from-emerald-900 via-emerald-800 to-emerald-900 text-white flex-col fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 z-30 shadow-2xl">
-            <div class="flex items-center justify-center h-24 border-b border-emerald-700/50">
-                <img src="logo w.png" class="w-16 h-16 mr-3" alt="Leafy Logo" onerror="this.src='https://placehold.co/64x64/104332/FFFFFF?text=L&font=inter'; this.onerror=null;">
-                <span class="text-3xl font-bold">LEAFY</span>
-            </div>
-            <nav class="flex-1 mt-6">
-                <a href="#" class="flex items-center px-6 py-3 bg-emerald-700/70 text-white transition-all duration-300 rounded-r-full mr-4">
-                    <span class="material-icons mr-3">dashboard</span>
-                    <span>Dashboard</span>
-                </a>
-                <a href="#" class="flex items-center px-6 py-3 text-emerald-100 hover:bg-emerald-700/50 transition-all duration-300 hover:translate-x-2 rounded-r-full mr-4">
-                    <span class="material-icons mr-3">settings</span>
-                    <span>Settings</span>
-                </a>
-            </nav>
-        </aside>
-
-        <div class="flex-1 flex flex-col overflow-hidden">
-            <header class="bg-white/80 backdrop-blur-md shadow-lg z-20 border-b border-gray-200/50 dark:bg-gray-800/80 dark:border-gray-700/50 transition-colors duration-300">
-                <div class="container mx-auto px-4 md:px-6 py-3 md:py-4 flex justify-between items-center">
-                    <button id="menu-toggle" class="md:hidden text-gray-600 dark:text-gray-300">
-                        <span class="material-icons text-3xl">menu</span>
-                    </button>
-                    <h1 class="text-2xl font-semibold text-gray-700 hidden md:block dark:text-gray-200">Dashboard</h1>
-                    <div class="flex items-center space-x-4">
-                        <button id="theme-toggle" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                            <span id="theme-icon-light" class="material-icons dark:hidden">light_mode</span>
-                            <span id="theme-icon-dark" class="material-icons hidden dark:inline">dark_mode</span>
-                        </button>
-                        <button id="refresh-button" class="p-2 rounded-full text-gray-500 dark:text-gray-400">
-                            <span class="material-icons">refresh</span>
-                        </button>
-                        <button id="download-csv-button" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700" title="Download CSV">
-                            <span class="material-icons">file_download</span>
-                        </button>
-                        <button id="notification-button" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 relative">
-                            <span class="material-icons">notifications</span>
-                            <span id="notification-badge" class="absolute top-1 right-1 flex h-3 w-3 -mt-px -mr-px hidden">
-                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-                            </span>
-                        </button>
-                    </div>
-                </div>
-            </header>
-            
-            <main class="flex-1 overflow-x-hidden overflow-y-scroll p-4 md:p-6">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6">
-                    
-                    <!-- TDS CARD -->
-                    <div class="stat-card bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl flex items-center space-x-4 border border-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:shadow-gray-900/50" style="--delay: 1">
-                        <div class="p-3 bg-gradient-to-br from-emerald-100 to-emerald-200 text-emerald-600 rounded-xl shadow-inner dark:from-emerald-800/50 dark:to-emerald-900/50 dark:text-emerald-300">
-                            <span class="material-icons text-3xl">science</span>
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Latest TDS</p>
-                            <div class="flex items-center space-x-2">
-                                <div class="flex items-baseline space-x-1">
-                                    <h2 id="latest-tds" class="text-4xl font-bold text-gray-900 stat-value dark:text-white">--</h2>
-                                    <span class="text-lg text-gray-500 dark:text-gray-400">ppm</span>
-                                </div>
-                            </div>
-                            <!-- Warning Indicator TDS -->
-                            <div id="tds-warning" class="hidden items-center text-red-500 dark:text-red-400 text-xs font-bold mt-1 animate-blink">
-                                <span class="material-icons text-sm mr-1">warning</span>
-                                <span id="tds-warning-text">Out of Range</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- pH CARD -->
-                    <div class="stat-card bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl flex items-center space-x-4 border border-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:shadow-gray-900/50" style="--delay: 2">
-                        <div class="p-3 bg-gradient-to-br from-emerald-100 to-emerald-200 text-emerald-600 rounded-xl shadow-inner dark:from-emerald-800/50 dark:to-emerald-900/50 dark:text-emerald-300">
-                            <span class="material-icons text-3xl">opacity</span>
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Latest pH</p>
-                            <h2 id="latest-ph" class="text-4xl font-bold text-gray-900 stat-value dark:text-white">--</h2>
-                             <!-- Warning Indicator pH -->
-                             <div id="ph-warning" class="hidden items-center text-red-500 dark:text-red-400 text-xs font-bold mt-1 animate-blink">
-                                <span class="material-icons text-sm mr-1">warning</span>
-                                <span id="ph-warning-text">Acidic/Alkaline</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="stat-card bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl flex items-center space-x-4 border border-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:shadow-gray-900/50" style="--delay: 3">
-                        <div class="p-3 bg-gradient-to-br from-orange-100 to-orange-200 text-orange-600 rounded-xl shadow-inner dark:from-orange-900/50 dark:to-orange-800/50 dark:text-orange-300">
-                            <span class="material-icons text-3xl">thermostat</span>
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Temperature</p>
-                            <div class="flex items-baseline space-x-2">
-                                <h2 id="latest-temp" class="text-4xl font-bold text-gray-900 stat-value dark:text-white">--</h2>
-                                <span class="text-lg text-gray-500 dark:text-gray-400">°C</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="stat-card bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl flex items-center space-x-4 border border-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:shadow-gray-900/50" style="--delay: 4">
-                        <div class="p-3 bg-gradient-to-br from-gray-100 to-gray-200 text-gray-600 rounded-xl shadow-inner dark:from-gray-700 dark:to-gray-800 dark:text-gray-300">
-                            <span class="material-icons text-3xl">update</span>
-                        </div>
-                        <div>
-                            <div class="flex items-center space-x-2">
-                                <span class="relative flex h-3 w-3">
-                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                    <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-                                </span>
-                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Live</p>
-                            </div>
-                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Last Update</p>
-                            <h2 id="last-update-time" class="text-3xl font-bold text-gray-900 stat-value dark:text-white">--:--</h2>
-                            <p id="last-update-date" class="text-sm text-gray-400 dark:text-gray-500">Waiting...</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 gap-4 md:gap-6 mb-6">
-                    
-                    <div class="bg-white p-4 md:p-6 rounded-xl shadow-lg hover:shadow-2xl relative border border-gray-100 transition-all duration-300 dark:bg-gray-800 dark:border-gray-700 dark:shadow-gray-900/50">
-                        <div id="loading-ph" class="loading-overlay"><div class="spinner"></div></div>
-                        <h3 class="text-xl font-semibold text-gray-800 mb-1 dark:text-gray-100">pH Trend</h3>
-                        <p class="text-sm text-gray-500 mb-4 dark:text-gray-400">Recent acidity readings</p>
-                        <div id="chart-ph" class="ct-chart ct-major-tenth chart-ph h-48 md:h-64 lg:h-80"></div>
-                    </div>
-                    
-                    <div class="bg-white p-4 md:p-6 rounded-xl shadow-lg hover:shadow-2xl relative border border-gray-100 transition-all duration-300 dark:bg-gray-800 dark:border-gray-700 dark:shadow-gray-900/50">
-                        <div id="loading-tds" class="loading-overlay"><div class="spinner"></div></div>
-                        <h3 class="text-xl font-semibold text-gray-800 mb-1 dark:text-gray-100">TDS Trend (ppm)</h3>
-                        <p class="text-sm text-gray-500 mb-4 dark:text-gray-400">Recent total dissolved solids</p>
-                        <div id="chart-tds" class="ct-chart ct-major-tenth chart-tds h-48 md:h-64 lg:h-80"></div>
-                    </div>
-
-                    <div class="bg-white p-4 md:p-6 rounded-xl shadow-lg hover:shadow-2xl relative border border-gray-100 transition-all duration-300 dark:bg-gray-800 dark:border-gray-700 dark:shadow-gray-900/50">
-                        <div id="loading-temp" class="loading-overlay"><div class="spinner"></div></div>
-                        <h3 class="text-xl font-semibold text-gray-800 mb-1 dark:text-gray-100">Temperature Trend (°C)</h3>
-                        <p class="text-sm text-gray-500 mb-4 dark:text-gray-400">Water temperature history</p>
-                        <div id="chart-temp" class="ct-chart ct-major-tenth chart-temp h-48 md:h-64 lg:h-80"></div>
-                    </div>
-                </div>
-                
-                <div class="bg-white p-4 md:p-6 rounded-xl shadow-lg hover:shadow-2xl border border-gray-100 transition-all duration-300 dark:bg-gray-800 dark:border-gray-700 dark:shadow-gray-900/50">
-                    <div class="flex items-start space-x-4 mb-6">
-                        <div class="p-3 bg-gradient-to-br from-emerald-100 to-emerald-200 text-emerald-600 rounded-xl shadow-inner dark:from-emerald-800/50 dark:to-emerald-900/50 dark:text-emerald-300">
-                            <span class="material-icons text-3xl">analytics</span>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100">System Analytics</h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Summary of events (Note: Pump 1 data replaced by Temp)</p>
-                        </div>
-                    </div>
-                    
-                    <div id="pump-analytics-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-                        <p class="text-sm text-gray-500 dark:text-gray-400 col-span-full">Loading analytics...</p>
-                    </div>
-                    <p id="error-message" class="text-red-500 dark:text-red-400 text-sm mt-4 h-5"></p>
-                </div>
-            </main>
-        </div>
-
-        <div id="notification-overlay" class="fixed inset-0 z-20 hidden pointer-events-none bg-black/50"></div>
-        <aside id="notification-sidebar" class="w-80 bg-white dark:bg-gray-900 text-gray-900 dark:text-white flex flex-col fixed inset-y-0 right-0 transform translate-x-full z-30 shadow-2xl border-l dark:border-gray-700">
-            <div class="flex items-center justify-between p-4 border-b dark:border-gray-700">
-                <h3 id="notification-title" class="text-lg font-semibold">Notifications</h3>
-                <button id="notification-close-btn" class="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">
-                    <span class="material-icons">close</span>
-                </button>
-            </div>
-            <div id="notification-list" class="flex-1 overflow-y-auto p-4 space-y-3">
-                <p id="notification-placeholder" class="text-sm text-gray-500 dark:text-gray-400 text-center mt-4">No new notifications.</p>
-            </div>
-        </aside>
+        <a href="#traction">Traction</a>
+        <a href="#">Research</a>
+        <a href="#">News</a>
+      </div>
+      <div class="footer-col">
+        <h5>Investors</h5>
+        <a href="#financials">Financials</a>
+        <a href="#market">Market Analysis</a>
+        <a href="#invest">Seed Round</a>
+        <a href="#">Pitch Deck</a>
+        <a href="#">Contact Us</a>
+      </div>
     </div>
-
-    <div id="analytics-modal-overlay" class="modal-overlay fixed inset-0 bg-black/60 backdrop-blur-sm z-40 flex items-center justify-center p-4 hidden">
-        <div id="analytics-modal" class="modal-card bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full relative">
-            <div class="flex items-center justify-between p-4 border-b dark:border-gray-700">
-                <h3 id="modal-title" class="text-lg font-semibold text-gray-900 dark:text-white">Details</h3>
-                <button id="modal-close-btn" class="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">
-                    <span class="material-icons">close</span>
-                </button>
-            </div>
-            <div id="modal-content" class="p-6 max-h-80 overflow-y-auto"></div>
-        </div>
+    <div class="footer-bottom">
+      <span>© 2026 Leafy Farms. All rights reserved.</span>
+      <span>IoT · AI · Hydroponics · Urban Agriculture · Bangladesh</span>
     </div>
+  </div>
+</footer>
 
-    <div id="confirm-modal-overlay" class="modal-overlay fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div id="confirm-modal" class="modal-card bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-sm w-full relative">
-            <div class="flex items-center justify-between p-4 border-b dark:border-gray-700">
-                <h3 id="confirm-modal-title" class="text-lg font-semibold text-gray-900 dark:text-white">Confirm Download</h3>
-                <button id="confirm-modal-close-btn" class="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">
-                    <span class="material-icons">close</span>
-                </button>
-            </div>
-            <div class="p-6">
-                <p class="text-sm text-gray-700 dark:text-gray-300">Do you want to download the complete channel data as a CSV file?</p>
-            </div>
-            <div class="flex justify-end space-x-3 p-4 bg-gray-50 dark:bg-gray-800/50 border-t dark:border-gray-700 rounded-b-xl">
-                <button id="confirm-modal-cancel-btn" class="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600">Cancel</button>
-                <button id="confirm-modal-download-btn" class="px-4 py-2 rounded-lg text-sm font-medium bg-emerald-600 text-white hover:bg-emerald-700">Yes, Download</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-
-            // --- 1. CONFIGURATION ---
-            const iotConfig = {
-                channelId: "3163376",
-                readApiKey: "ZLHR0MONHP4MG5DV",
-                writeApiKey: "NSRV4S3QMA9Y4LXL",
-                results: 40,
-                pollIntervalMs: 30000,
-            };
-            
-            // WARNING THRESHOLDS
-            const THRESHOLDS = {
-                ph: { min: 5.9, max: 6.3 },
-                tds: { min: 900, max: 1100 }
-            };
-            
-            const MAX_POINTS = Math.max(6, Math.min(iotConfig.results || 40, 60));
-            
-            // --- 2. GLOBAL STATE ---
-            let pumpStates = { 1: false, 2: false, 3: false, 4: false };
-            let lastPumpStates = { 1: false, 2: false, 3: false, 4: false };
-            let phChartInstance;
-            let tdsChartInstance;
-            let tempChartInstance;
-            let currentFeeds = [];
-            let currentAnalytics = {};
-            let lastFocusedElement = null;
-            let notifications = [];
-            let unreadNotifications = 0;
-
-            const pumpNames = {
-                1: "Pump 1 (Replaced by Temp)",
-                2: "Pump 2 (pH Down)",
-                3: "Pump 3 (Nutrient)",
-                4: "Pump 4 (Nutrient)"
-            };
-
-            // --- 3. UI ELEMENT REFERENCES ---
-            const ui = {
-                tds: document.getElementById('latest-tds'),
-                ph: document.getElementById('latest-ph'),
-                temp: document.getElementById('latest-temp'),
-                updateTime: document.getElementById('last-update-time'),
-                updateDate: document.getElementById('last-update-date'),
-                errorMessage: document.getElementById('error-message'),
-                refreshButton: document.getElementById('refresh-button'),
-                loadingPh: document.getElementById('loading-ph'),
-                loadingTds: document.getElementById('loading-tds'),
-                loadingTemp: document.getElementById('loading-temp'),
-                sidebar: document.getElementById('sidebar'),
-                menuToggle: document.getElementById('menu-toggle'),
-                themeToggle: document.getElementById('theme-toggle'),
-                sidebarOverlay: document.getElementById('sidebar-overlay'), 
-                downloadCsvButton: document.getElementById('download-csv-button'), 
-                pumpAnalyticsGrid: document.getElementById('pump-analytics-grid'), 
-                modalOverlay: document.getElementById('analytics-modal-overlay'),
-                modalTitle: document.getElementById('modal-title'),
-                modalContent: document.getElementById('modal-content'),
-                modalCloseBtn: document.getElementById('modal-close-btn'),
-                confirmModalOverlay: document.getElementById('confirm-modal-overlay'),
-                confirmModalCloseBtn: document.getElementById('confirm-modal-close-btn'),
-                confirmModalCancelBtn: document.getElementById('confirm-modal-cancel-btn'),
-                confirmModalDownloadBtn: document.getElementById('confirm-modal-download-btn'),
-                notificationButton: document.getElementById('notification-button'),
-                notificationBadge: document.getElementById('notification-badge'),
-                notificationSidebar: document.getElementById('notification-sidebar'),
-                notificationOverlay: document.getElementById('notification-overlay'),
-                notificationCloseBtn: document.getElementById('notification-close-btn'),
-                notificationList: document.getElementById('notification-list'),
-                notificationPlaceholder: document.getElementById('notification-placeholder'),
-                // WARNING ELEMENTS
-                tdsWarning: document.getElementById('tds-warning'),
-                tdsWarningText: document.getElementById('tds-warning-text'),
-                phWarning: document.getElementById('ph-warning'),
-                phWarningText: document.getElementById('ph-warning-text')
-            };
-
-            // --- 4. THINGSPEAK API ---
-            async function fetchRecentReadings() {
-                const { channelId, readApiKey } = iotConfig;
-                const url = `https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${readApiKey}&results=${MAX_POINTS}`;
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`Failed to fetch ThingSpeak feeds (${response.status})`);
-                const payload = await response.json();
-                return { channel: payload.channel, feeds: payload.feeds ?? [] };
-            }
-
-            // --- 5. HELPER FUNCTIONS ---
-            function normalizeNumber(value) {
-                const parsed = parseFloat(value);
-                return Number.isFinite(parsed) ? parsed : null;
-            }
-
-            function getPumpStatesFromFeed(feed = {}) {
-                return {
-                    1: feed.field3 === "1", // This will likely be false now since field3 is float temperature
-                    2: feed.field4 === "1",
-                    3: feed.field5 === "1",
-                    4: feed.field6 === "1",
-                };
-            }
-
-            function getResponsiveChartLabels(feeds) {
-                const isMobile = window.innerWidth < 768;
-                const feedCount = feeds.length;
-                return feeds.map((feed, index) => {
-                    const createdAt = feed.created_at ? new Date(feed.created_at) : null;
-                    if (!createdAt) return "";
-                    let skipInterval = isMobile ? (feedCount > 30 ? 6 : 3) : (feedCount > 30 ? 3 : 2);
-                    if (index === 0 || index === feedCount - 1 || index % skipInterval === 0) {
-                        return createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
-                    }
-                    return "";
-                });
-            }
-
-            // --- 6. CHART BUILDER FUNCTIONS ---
-            const chartBaseOptions = {
-                fullWidth: true, showArea: true,
-                lineSmooth: Chartist.Interpolation.cardinal({ tension: 0.2 }),
-                axisX: { showGrid: true, showLabel: true },
-                axisY: { onlyInteger: false, offset: 60, showGrid: true, showLabel: true },
-                chartPadding: { top: 20, right: window.innerWidth < 768 ? 15 : 30, bottom: window.innerWidth < 768 ? 35 : 30, left: window.innerWidth < 768 ? 10 : 20 },
-                plugins: [
-                    Chartist.plugins.ctAxisTitle({
-                        axisX: { axisTitle: 'Time', axisClass: 'ct-axis-title', offset: { x: 0, y: 50 }, textAnchor: 'middle' },
-                        axisY: { axisTitle: '', axisClass: 'ct-axis-title', offset: { x: 0, y: 0 }, flipTitle: true }
-                    })
-                ]
-            };
-            
-            function buildTdsChartData(feeds) {
-                const labels = getResponsiveChartLabels(feeds);
-                const tdsSeries = feeds.map(feed => normalizeNumber(feed.field1));
-                const options = { ...chartBaseOptions, low: 0, axisY: { ...chartBaseOptions.axisY, labelInterpolationFnc: value => `${Math.round(value)} ppm` },
-                    plugins: [ Chartist.plugins.ctAxisTitle({ axisX: { axisTitle: 'Time', axisClass: 'ct-axis-title', offset: { x: 0, y: 50 }, textAnchor: 'middle' }, axisY: { axisTitle: 'TDS (ppm)', axisClass: 'ct-axis-title', offset: { x: 0, y: 15 }, flipTitle: true } }) ]
-                };
-                return { data: { labels, series: [tdsSeries] }, options: options };
-            }
-
-            function buildPhChartData(feeds) {
-                const labels = getResponsiveChartLabels(feeds);
-                const phSeries = feeds.map(feed => normalizeNumber(feed.field2));
-                const options = { ...chartBaseOptions, low: 2, high: 12, axisY: { ...chartBaseOptions.axisY, labelInterpolationFnc: value => value.toFixed(1) },
-                    plugins: [ Chartist.plugins.ctAxisTitle({ axisX: { axisTitle: 'Time', axisClass: 'ct-axis-title', offset: { x: 0, y: 50 }, textAnchor: 'middle' }, axisY: { axisTitle: 'pH Level', axisClass: 'ct-axis-title', offset: { x: 0, y: 15 }, flipTitle: true } }) ]
-                };
-                return { data: { labels, series: [phSeries] }, options: options };
-            }
-
-            function buildTempChartData(feeds) {
-                const labels = getResponsiveChartLabels(feeds);
-                const tempSeries = feeds.map(feed => normalizeNumber(feed.field3));
-                const options = { ...chartBaseOptions,
-                    axisY: { ...chartBaseOptions.axisY, labelInterpolationFnc: value => `${value.toFixed(1)}°C` },
-                    plugins: [ Chartist.plugins.ctAxisTitle({ axisX: { axisTitle: 'Time', axisClass: 'ct-axis-title', offset: { x: 0, y: 50 }, textAnchor: 'middle' }, axisY: { axisTitle: 'Temp (°C)', axisClass: 'ct-axis-title', offset: { x: 0, y: 15 }, flipTitle: true } }) ]
-                };
-                return { data: { labels, series: [tempSeries] }, options: options };
-            }
-            
-            // --- 7. UI UPDATE ---
-            function updateDashboardUI(feeds) {
-                if (!feeds || feeds.length === 0) {
-                    ui.loadingPh.style.display = 'none';
-                    ui.loadingTds.style.display = 'none';
-                    ui.loadingTemp.style.display = 'none';
-                    return;
-                }
-                
-                currentFeeds = feeds; 
-                const latestFeed = feeds[feeds.length - 1];
-                
-                // Update Stats
-                const latestTds = normalizeNumber(latestFeed.field1);
-                const latestPh = normalizeNumber(latestFeed.field2);
-                const latestTemp = normalizeNumber(latestFeed.field3);
-                const lastUpdated = latestFeed.created_at ? new Date(latestFeed.created_at) : null;
-
-                ui.tds.textContent = latestTds !== null ? latestTds.toFixed(0) : "N/A";
-                ui.ph.textContent = latestPh !== null ? latestPh.toFixed(2) : "N/A";
-                ui.temp.textContent = latestTemp !== null ? latestTemp.toFixed(1) : "N/A";
-                
-                // --- WARNING LOGIC ---
-                
-                // pH Warning Check: > 6.3 or < 5.9
-                if (latestPh !== null) {
-                    if (latestPh > THRESHOLDS.ph.max) {
-                        ui.phWarning.classList.remove('hidden');
-                        ui.phWarning.classList.add('flex');
-                        ui.phWarningText.textContent = `High pH (>${THRESHOLDS.ph.max})`;
-                        ui.ph.classList.add('text-warning');
-                    } else if (latestPh < THRESHOLDS.ph.min) {
-                        ui.phWarning.classList.remove('hidden');
-                        ui.phWarning.classList.add('flex');
-                        ui.phWarningText.textContent = `Low pH (<${THRESHOLDS.ph.min})`;
-                        ui.ph.classList.add('text-warning');
-                    } else {
-                        ui.phWarning.classList.add('hidden');
-                        ui.phWarning.classList.remove('flex');
-                        ui.ph.classList.remove('text-warning');
-                    }
-                }
-
-                // TDS Warning Check: > 1100 or < 900
-                if (latestTds !== null) {
-                    if (latestTds > THRESHOLDS.tds.max) {
-                        ui.tdsWarning.classList.remove('hidden');
-                        ui.tdsWarning.classList.add('flex');
-                        ui.tdsWarningText.textContent = `High TDS (>${THRESHOLDS.tds.max})`;
-                        ui.tds.classList.add('text-warning');
-                    } else if (latestTds < THRESHOLDS.tds.min) {
-                        ui.tdsWarning.classList.remove('hidden');
-                        ui.tdsWarning.classList.add('flex');
-                        ui.tdsWarningText.textContent = `Low TDS (<${THRESHOLDS.tds.min})`;
-                        ui.tds.classList.add('text-warning');
-                    } else {
-                        ui.tdsWarning.classList.add('hidden');
-                        ui.tdsWarning.classList.remove('flex');
-                        ui.tds.classList.remove('text-warning');
-                    }
-                }
-
-                // Update Time display
-                if (lastUpdated) {
-                    ui.updateTime.textContent = lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                    ui.updateDate.textContent = lastUpdated.toLocaleDateString();
-                } else {
-                    ui.updateTime.textContent = "N/A";
-                    ui.updateDate.textContent = "No data";
-                }
-                
-                pumpStates = getPumpStatesFromFeed(latestFeed);
-                checkPumpChangesForNotifications(pumpStates, lastPumpStates);
-                lastPumpStates = { ...pumpStates };
-
-                try {
-                    const analytics = calculatePumpAnalytics(feeds);
-                    currentAnalytics = analytics; 
-                    renderPumpAnalytics(analytics);
-                    setErrorMessage(null); 
-                } catch (err) {
-                    setErrorMessage("Could not calculate analytics.");
-                }
-                
-                // Update Charts
-                const phChartData = buildPhChartData(feeds);
-                const tdsChartData = buildTdsChartData(feeds);
-                const tempChartData = buildTempChartData(feeds); 
-                
-                if (phChartInstance) phChartInstance.update(phChartData.data, phChartData.options);
-                else phChartInstance = new Chartist.Line('#chart-ph', phChartData.data, phChartData.options); 
-                
-                if (tdsChartInstance) tdsChartInstance.update(tdsChartData.data, tdsChartData.options);
-                else tdsChartInstance = new Chartist.Line('#chart-tds', tdsChartData.data, tdsChartData.options); 
-                
-                if (tempChartInstance) tempChartInstance.update(tempChartData.data, tempChartData.options);
-                else tempChartInstance = new Chartist.Line('#chart-temp', tempChartData.data, tempChartData.options); 
-                
-                ui.loadingPh.style.display = 'none';
-                ui.loadingTds.style.display = 'none';
-                ui.loadingTemp.style.display = 'none';
-            }
-
-            function calculatePumpAnalytics(feeds) {
-                let analytics = { 1: { dosesList: [] }, 2: { dosesList: [] }, 3: { dosesList: [] }, 4: { dosesList: [] } };
-                for (const feed of feeds) {
-                    if (feed.field3 === "1") analytics[1].dosesList.push(new Date(feed.created_at));
-                    if (feed.field4 === "1") analytics[2].dosesList.push(new Date(feed.created_at));
-                    if (feed.field5 === "1") analytics[3].dosesList.push(new Date(feed.created_at));
-                    if (feed.field6 === "1") analytics[4].dosesList.push(new Date(feed.created_at));
-                }
-                let processedAnalytics = {};
-                for (const num in analytics) {
-                    const list = analytics[num].dosesList;
-                    processedAnalytics[num] = { totalDoses: list.length, lastDosed: list.length > 0 ? list[list.length - 1] : null, dosesList: list };
-                }
-                return processedAnalytics;
-            }
-
-            function renderPumpAnalytics(analytics) {
-                ui.pumpAnalyticsGrid.innerHTML = ''; 
-                [1, 2, 3, 4].forEach(num => {
-                    const data = analytics[num];
-                    const lastDosedTime = data.lastDosed ? data.lastDosed.toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true }) : 'Never in this period';
-                    const displayCount = (num == 1) ? "-" : data.totalDoses;
-                    const displaySub = (num == 1) ? "Data on Field 3 is Temp" : "doses";
-                    
-                    const cardHTML = `
-                        <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg shadow-inner border border-gray-200 dark:border-gray-700 cursor-pointer transition-colors hover:bg-gray-100 dark:hover:bg-gray-600/50" data-pump-id="${num}">
-                            <p class="text-sm font-semibold text-emerald-600 dark:text-emerald-400 truncate pointer-events-none">${pumpNames[num]}</p>
-                            <p class="text-gray-700 dark:text-gray-200 mt-2 pointer-events-none">
-                                <span class="font-bold text-3xl text-gray-900 dark:text-white pointer-events-none">${displayCount}</span>
-                                <span class="text-sm pointer-events-none">${displaySub}</span>
-                            </p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2 truncate pointer-events-none">
-                                <span class="material-icons text-xs align-middle mr-1 pointer-events-none">update</span>Last: ${lastDosedTime}
-                            </p>
-                        </div>`;
-                    ui.pumpAnalyticsGrid.innerHTML += cardHTML;
-                });
-            }
-
-            // --- 8. MODALS & NOTIFICATIONS ---
-            function openAnalyticsModal(pumpId) {
-                const data = currentAnalytics[pumpId];
-                if (!data) return;
-                lastFocusedElement = document.activeElement;
-                ui.modalTitle.textContent = `Dose Log: ${pumpNames[pumpId]}`;
-                if (data.dosesList.length === 0) {
-                    ui.modalContent.innerHTML = `<p class="text-gray-500 dark:text-gray-400">No dosing events recorded in this period.</p>`;
-                } else {
-                    const listHtml = data.dosesList.map(date => `<li class="py-1 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700">${date.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short', hour12: true })}</li>`).reverse().join('');
-                    ui.modalContent.innerHTML = `<ul class="space-y-1 text-sm text-gray-700 dark:text-gray-300">${listHtml}</ul>`;
-                }
-                ui.modalOverlay.classList.remove('hidden');
-                setTimeout(() => { ui.modalOverlay.classList.add('open'); ui.modalCloseBtn.focus(); trapFocus(ui.modalOverlay, closeAnalyticsModal); }, 10);
-            }
-
-            function closeAnalyticsModal() {
-                ui.modalOverlay.classList.remove('open');
-                if (ui.modalOverlay._trapFocusHandlers) { ui.modalOverlay.removeEventListener('keydown', ui.modalOverlay._trapFocusHandlers.handleTabKey); ui.modalOverlay.removeEventListener('keydown', ui.modalOverlay._trapFocusHandlers.handleEscapeKey); delete ui.modalOverlay._trapFocusHandlers; }
-                setTimeout(() => { ui.modalOverlay.classList.add('hidden'); if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; } }, 300);
-            }
-
-            function openConfirmModal() {
-                lastFocusedElement = document.activeElement;
-                ui.confirmModalOverlay.classList.remove('hidden');
-                setTimeout(() => { ui.confirmModalOverlay.classList.add('open'); ui.confirmModalCancelBtn.focus(); trapFocus(ui.confirmModalOverlay, closeConfirmModal); }, 10);
-            }
-
-            function closeConfirmModal() {
-                ui.confirmModalOverlay.classList.remove('open');
-                if (ui.confirmModalOverlay._trapFocusHandlers) { ui.confirmModalOverlay.removeEventListener('keydown', ui.confirmModalOverlay._trapFocusHandlers.handleTabKey); ui.confirmModalOverlay.removeEventListener('keydown', ui.confirmModalOverlay._trapFocusHandlers.handleEscapeKey); delete ui.confirmModalOverlay._trapFocusHandlers; }
-                setTimeout(() => { ui.confirmModalOverlay.classList.add('hidden'); if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; } }, 300);
-            }
-
-            function handleConfirmDownload() {
-                const { channelId, readApiKey } = iotConfig;
-                const csvUrl = `https://api.thingspeak.com/channels/${channelId}/feeds.csv?api_key=${readApiKey}`;
-                window.open(csvUrl, '_blank');
-                closeConfirmModal();
-            }
-
-            function openNotificationSidebar() {
-                lastFocusedElement = document.activeElement;
-                ui.notificationOverlay.classList.remove('hidden');
-                ui.notificationOverlay.classList.add('pointer-events-auto');
-                ui.notificationSidebar.classList.remove('translate-x-full');
-                setTimeout(() => { ui.notificationCloseBtn.focus(); trapFocus(ui.notificationSidebar, closeNotificationSidebar); }, 10);
-                unreadNotifications = 0;
-                ui.notificationBadge.classList.add('hidden');
-            }
-
-            function closeNotificationSidebar() {
-                ui.notificationSidebar.classList.add('translate-x-full');
-                if (ui.notificationSidebar._trapFocusHandlers) { ui.notificationSidebar.removeEventListener('keydown', ui.notificationSidebar._trapFocusHandlers.handleTabKey); ui.notificationSidebar.removeEventListener('keydown', ui.notificationSidebar._trapFocusHandlers.handleEscapeKey); delete ui.notificationSidebar._trapFocusHandlers; }
-                if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; }
-                ui.notificationOverlay.classList.add('hidden');
-                ui.notificationOverlay.classList.remove('pointer-events-auto');
-            }
-
-            function checkPumpChangesForNotifications(current, last) {
-                [1, 2, 3, 4].forEach(num => {
-                    if (current[num] && !last[num]) {
-                        addNotification(pumpNames[num], "Dosing pump activated by system.", "power");
-                    }
-                });
-            }
-
-            function addNotification(title, message, icon) {
-                const newNotification = { id: Date.now(), title, message, icon, time: new Date() };
-                notifications.unshift(newNotification);
-                unreadNotifications++;
-                renderNotifications();
-                ui.notificationBadge.classList.remove('hidden');
-            }
-
-            function renderNotifications() {
-                if (notifications.length === 0) {
-                    ui.notificationPlaceholder.classList.remove('hidden');
-                    ui.notificationList.innerHTML = '';
-                } else {
-                    ui.notificationPlaceholder.classList.add('hidden');
-                    ui.notificationList.innerHTML = notifications.map(n => `
-                        <div class="flex items-start space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                            <div class="p-2 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-300 rounded-full">
-                                <span class="material-icons text-lg">${n.icon}</span>
-                            </div>
-                            <div>
-                                <p class="text-sm font-semibold text-gray-900 dark:text-white">${n.title}</p>
-                                <p class="text-sm text-gray-600 dark:text-gray-300">${n.message}</p>
-                                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">${n.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</p>
-                            </div>
-                        </div>`).join('');
-                }
-            }
-
-            function trapFocus(element, closeFunction) {
-                const focusableElements = element.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-                const firstFocusable = focusableElements[0];
-                const lastFocusable = focusableElements[focusableElements.length - 1];
-                function handleTabKey(e) {
-                    if (e.key !== 'Tab') return;
-                    if (e.shiftKey) { if (document.activeElement === firstFocusable) { e.preventDefault(); lastFocusable.focus(); } } 
-                    else { if (document.activeElement === lastFocusable) { e.preventDefault(); firstFocusable.focus(); } }
-                }
-                function handleEscapeKey(e) { if (e.key === 'Escape') closeFunction(); }
-                element.addEventListener('keydown', handleTabKey); element.addEventListener('keydown', handleEscapeKey);
-                element._trapFocusHandlers = { handleTabKey, handleEscapeKey };
-            }
-
-            async function loadData(showSpinners = true) {
-                if (showSpinners) { ui.loadingPh.style.display = 'flex'; ui.loadingTds.style.display = 'flex'; ui.loadingTemp.style.display = 'flex'; }
-                setErrorMessage(null);
-                ui.refreshButton.disabled = true;
-                try {
-                    const response = await fetchRecentReadings();
-                    const newFeeds = (response.feeds || []).slice(-MAX_POINTS);
-                    updateDashboardUI(newFeeds);
-                } catch (err) {
-                    setErrorMessage(err.message);
-                    ui.loadingPh.style.display = 'none'; ui.loadingTds.style.display = 'none'; ui.loadingTemp.style.display = 'none';
-                } finally {
-                    ui.refreshButton.disabled = false;
-                }
-            }
-
-            function setErrorMessage(message) { ui.errorMessage.textContent = message ? `Error: ${message}` : ""; }
-
-            // --- 9. INITIALIZATION ---
-            ui.menuToggle.addEventListener('click', () => { ui.sidebar.classList.toggle('-translate-x-full'); ui.sidebarOverlay.classList.toggle('hidden'); });
-            ui.sidebarOverlay.addEventListener('click', () => { ui.sidebar.classList.add('-translate-x-full'); ui.sidebarOverlay.classList.add('hidden'); });
-            ui.sidebar.querySelectorAll('a').forEach(link => { link.addEventListener('click', () => { if (!ui.sidebarOverlay.classList.contains('hidden')) { ui.sidebar.classList.add('-translate-x-full'); ui.sidebarOverlay.classList.add('hidden'); } }); });
-            ui.themeToggle.addEventListener('click', () => { const isDark = document.documentElement.classList.toggle('dark'); localStorage.theme = isDark ? 'dark' : 'light'; });
-            ui.refreshButton.addEventListener('click', () => { ui.refreshButton.classList.add('refreshing'); loadData(true); setTimeout(() => { ui.refreshButton.classList.remove('refreshing'); }, 1000); });
-            ui.downloadCsvButton.addEventListener('click', openConfirmModal);
-            ui.pumpAnalyticsGrid.addEventListener('click', (e) => { const card = e.target.closest('[data-pump-id]'); if (card) openAnalyticsModal(card.dataset.pumpId); });
-            ui.modalCloseBtn.addEventListener('click', closeAnalyticsModal);
-            ui.modalOverlay.addEventListener('click', (e) => { if (e.target === ui.modalOverlay) closeAnalyticsModal(); });
-            ui.confirmModalCloseBtn.addEventListener('click', closeConfirmModal);
-            ui.confirmModalCancelBtn.addEventListener('click', closeConfirmModal);
-            ui.confirmModalOverlay.addEventListener('click', (e) => { if (e.target === ui.confirmModalOverlay) closeConfirmModal(); });
-            ui.confirmModalDownloadBtn.addEventListener('click', handleConfirmDownload);
-            ui.notificationButton.addEventListener('click', openNotificationSidebar);
-            ui.notificationCloseBtn.addEventListener('click', closeNotificationSidebar);
-            ui.notificationOverlay.addEventListener('click', closeNotificationSidebar);
-
-            const splashScreen = document.getElementById('splash-screen');
-            const appContent = document.getElementById('app-content');
-            setTimeout(() => { splashScreen.classList.add('fade-out'); appContent.classList.add('fade-in'); setTimeout(() => { splashScreen.style.display = 'none'; }, 600); }, 2500); 
-            
-            loadData(true);
-            if (iotConfig.pollIntervalMs > 0) setInterval(() => loadData(false), iotConfig.pollIntervalMs);
-            
-            let resizeTimeout;
-            window.addEventListener('resize', () => {
-                clearTimeout(resizeTimeout);
-                resizeTimeout = setTimeout(() => {
-                    if (phChartInstance && currentFeeds.length > 0) { const phData = buildPhChartData(currentFeeds); phChartInstance.update(phData.data, phChartInstance.options); }
-                    if (tdsChartInstance && currentFeeds.length > 0) { const tdsData = buildTdsChartData(currentFeeds); tdsChartInstance.update(tdsData.data, tdsChartInstance.options); }
-                    if (tempChartInstance && currentFeeds.length > 0) { const tempData = buildTempChartData(currentFeeds); tempChartInstance.update(tempData.data, tempChartInstance.options); }
-                }, 500); 
-            });
-        });
-    </script>
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.fade-up').forEach((el, i) => {
+    el.style.transitionDelay = (i % 4) * 0.08 + 's';
+    observer.observe(el);
+  });
+</script>
 </body>
 </html>
