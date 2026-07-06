@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login — Leafy® Growtune Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-main:        #F3F7F4;
+    --bg-card:        #FFFFFF;
+    --bg-soft:        #E5EFE7;
+    --text-main:      #0A2512;
+    --text-mid:       #26402C;
+    --text-muted:     #526D57;
+    --brand-green:    #15803D;
+    --brand-glow:     #10B981;
+    --border-light:   rgba(10, 37, 18, 0.08);
+    --border-medium:  rgba(10, 37, 18, 0.16);
+    --error:          #DC2626;
+    --shadow-lg:      0 16px 40px rgba(10, 37, 18, 0.10);
+  }
+
+  html, body {
+    height: 100%;
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-main);
+    color: var(--text-main);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .bg-glow {
+    position: absolute; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(circle 600px at 80% 20%, rgba(16, 185, 129, 0.10) 0%, transparent 100%),
+      radial-gradient(circle 500px at 10% 90%, rgba(101, 163, 13, 0.08) 0%, transparent 100%);
+  }
+
+  .login-card {
+    position: relative;
+    z-index: 2;
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: 20px;
+    box-shadow: var(--shadow-lg);
+    padding: 48px 40px;
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+  }
+
+  .login-logo-text {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+    font-size: 1.9rem;
+    letter-spacing: -0.02em;
+    color: var(--text-main);
+    margin-bottom: 4px;
+  }
+  .login-logo-text sup { color: var(--brand-glow); font-size: 0.5em; }
+
+  .login-sub {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-bottom: 32px;
+    font-weight: 500;
+  }
+
+  .field-label {
+    display: block;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-mid);
+    margin-bottom: 8px;
+  }
+
+  .password-wrap { position: relative; margin-bottom: 8px; }
+
+  #password {
+    width: 100%;
+    padding: 14px 44px 14px 16px;
+    border: 1px solid var(--border-medium);
+    border-radius: 10px;
+    font-size: 1rem;
+    font-family: 'Inter', sans-serif;
+    color: var(--text-main);
+    background: var(--bg-main);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  #password:focus {
+    border-color: var(--brand-glow);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+  }
+
+  .toggle-visibility {
+    position: absolute;
+    right: 12px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer;
+    color: var(--text-muted); font-size: 0.75rem; font-weight: 700;
+    padding: 4px;
+  }
+
+  .error-msg {
+    text-align: left;
+    font-size: 0.8rem;
+    color: var(--error);
+    min-height: 18px;
+    margin: 6px 0 14px;
+    font-weight: 600;
+  }
+
+  .btn-login {
+    width: 100%;
+    background: var(--text-main);
+    color: #ffffff;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    font-family: 'Montserrat', sans-serif;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+    margin-top: 8px;
+  }
+  .btn-login:hover { background: var(--brand-green); transform: translateY(-1px); }
+  .btn-login:active { transform: translateY(0); }
+
+  .back-link {
+    display: inline-block;
+    margin-top: 24px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .back-link:hover { color: var(--brand-green); }
+
+  @keyframes shake {
+    10%, 90% { transform: translateX(-1px); }
+    20%, 80% { transform: translateX(2px); }
+    30%, 50%, 70% { transform: translateX(-4px); }
+    40%, 60% { transform: translateX(4px); }
+  }
+  .shake { animation: shake 0.5s; }
+
+  /* --- BACKGROUND LEAF ANIMATION (no intro, runs continuously behind the card) --- */
+  #leaf-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .falling-leaf {
+    position: absolute;
+    top: -40px;
+    color: rgba(16, 185, 129, 0.35);
+    animation-name: leafFall;
+    animation-timing-function: ease-in;
+    animation-iteration-count: infinite;
+    will-change: transform;
+  }
+  @keyframes leafFall {
+    0%   { transform: translate(0, -10vh) rotate(0deg); opacity: 0; }
+    8%   { opacity: 1; }
+    92%  { opacity: 1; }
+    100% { transform: translate(30px, 110vh) rotate(340deg); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Continuous background leaf animation -->
+<div id="leaf-bg">
+<span class="falling-leaf" style="left:5%;  font-size:1.2rem; animation-duration:9s;  animation-delay:0s;">🍃</span>
+<span class="falling-leaf" style="left:16%; font-size:1.7rem; animation-duration:11s; animation-delay:2s;">🍃</span>
+<span class="falling-leaf" style="left:28%; font-size:1rem;  animation-duration:8s;  animation-delay:4.5s;">🍃</span>
+<span class="falling-leaf" style="left:40%; font-size:1.5rem; animation-duration:10s; animation-delay:1s;">🍃</span>
+<span class="falling-leaf" style="left:53%; font-size:1.1rem; animation-duration:9.5s; animation-delay:3.2s;">🍃</span>
+<span class="falling-leaf" style="left:66%; font-size:1.6rem; animation-duration:12s; animation-delay:0.6s;">🍃</span>
+<span class="falling-leaf" style="left:78%; font-size:1.3rem; animation-duration:8.5s; animation-delay:5s;">🍃</span>
+<span class="falling-leaf" style="left:88%; font-size:1.4rem; animation-duration:10.5s; animation-delay:2.8s;">🍃</span>
+<span class="falling-leaf" style="left:95%; font-size:1rem;  animation-duration:9s;  animation-delay:4s;">🍃</span>
+</div>
+
+<div class="bg-glow"></div>
+
+<div class="login-card" id="loginCard">
+  <div class="login-logo-text">LEAFY<sup>®</sup></div>
+  <div class="login-sub">Growtune Dashboard Access</div>
+
+  <form id="loginForm" novalidate>
+    <label class="field-label" for="password">Password</label>
+    <div class="password-wrap">
+      <input type="password" id="password" name="password" autocomplete="off" placeholder="Enter password" required>
+      <button type="button" class="toggle-visibility" id="toggleVisibility">SHOW</button>
+    </div>
+    <div class="error-msg" id="errorMsg"></div>
+    <button type="submit" class="btn-login">Enter Dashboard</button>
+  </form>
+
+  <a href="index.html" class="back-link">&larr; Back to homepage</a>
+</div>
+
+<script>
+  const form = document.getElementById('loginForm');
+  const passwordInput = document.getElementById('password');
+  const errorMsg = document.getElementById('errorMsg');
+  const loginCard = document.getElementById('loginCard');
+  const toggleBtn = document.getElementById('toggleVisibility');
+
+  const CORRECT_PASSWORD = "LEAFY";
+
+  toggleBtn.addEventListener('click', () => {
+    const isHidden = passwordInput.type === 'password';
+    passwordInput.type = isHidden ? 'text' : 'password';
+    toggleBtn.textContent = isHidden ? 'HIDE' : 'SHOW';
+  });
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const entered = passwordInput.value;
+
+    if (entered === CORRECT_PASSWORD) {
+      window.location.href = "1.html";
+    } else {
+      errorMsg.textContent = "Incorrect password. Please try again.";
+      loginCard.classList.remove('shake');
+      void loginCard.offsetWidth; // restart animation
+      loginCard.classList.add('shake');
+      passwordInput.value = "";
+      passwordInput.focus();
+    }
+  });
+</script>
+</body>
+</html>
